@@ -21,6 +21,22 @@ GameManager::GameManager()
 	Timer::Instance().init();
 }
 
+float GameManager:: RandomFloat(float a, float b) {
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float diff = b - a;
+	float r = random * diff;
+	return a + r;
+}
+bool GameManager::isColliding(SDLBmp &a, SDLBmp &b) {
+	float xDist = abs(abs(a.x - b.x) - 25);
+	float yDist = abs(abs(a.y - b.y) - 25);
+	float totaltDist = xDist + yDist;
+	if (totaltDist < 40) {
+		return true;
+	}
+	return false;
+}
+
 void GameManager::play()
 {
 	bool notGameOver = true;
@@ -28,8 +44,13 @@ void GameManager::play()
 	// Load bitmaps
 	SDLBmp background("Assets/gfx/sdl2.bmp");
 	SDLBmp player("Assets/gfx/sdl_bro.bmp");
+	SDLBmp apple("Assets/gfx/sdl_bro.bmp");
 
+	apple.x = RandomFloat(1.f, 50.f);
+	apple.y = RandomFloat(1.f, 50.f);
+	
 	background.draw();
+	apple.draw();
 
 	// Calculate render frames per second (second / frames) (60)
 	float render_fps = 1.f / 60.f;
@@ -38,7 +59,7 @@ void GameManager::play()
 	while (notGameOver) {
 		handleInput();
 		gameLoopTimer(&player);
-		draw(&player, &background);
+		draw(&player, &background, &apple);
 
 	}
 }
@@ -58,7 +79,8 @@ void GameManager::handleInput() {
 
 		 // Left key
 		 SDL_Event e;
-		 SDL_PollEvent(&e);
+		 SDL_PollEvent(&e);
+
 		 if (e.type == SDL_KEYDOWN) {
 			 switch (e.key.keysym.sym) {
 			 case SDLK_UP:
@@ -112,12 +134,14 @@ void GameManager::handleInput() {
 		 // Add bitmaps to renderer
  }
 
- void GameManager::draw(SDLBmp * player, SDLBmp * background) {
+ void GameManager::draw(SDLBmp * player, SDLBmp * background, SDLBmp *apple) {
 	 if (m_lastRender >= 1 / 60);
 	 {
 		 // Add bitmaps to renderer
 		 background->draw();
 		 player->draw();
+		 apple->draw();
+
 		// nextCube.draw();
 
 		 // Render window

@@ -35,7 +35,7 @@ public:
 	void gameLoopTimer(SDLBmp * player);
 	void handleInput();
 	void gameLoop(SDLBmp * player);
-	void draw(SDLBmp * player, SDLBmp * background);
+	void draw(SDLBmp * player, SDLBmp * background, SDLBmp *apple);
 private:
 
 	GameManager();								// Hidden constructor
@@ -44,7 +44,8 @@ private:
 
 	 Direction currentDirection;
 	 Direction nextDirection;
-	
+	 float RandomFloat(float, float);
+	 bool isColliding(SDLBmp&, SDLBmp&);
 	unsigned int m_window; // pointer to main window
 	float m_lastRender; // Time in seconds since last render
 };
