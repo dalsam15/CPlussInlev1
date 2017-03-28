@@ -42,7 +42,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <LibraryPath>E:\Programmer\PG4400\GrafikkEksempler\Oppgaven\packages\sdl2.2.0.5\build\native\lib\Win32\dynamic;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\bruker\Documents\CPLUSPLUS\CPlussInLev1\Oppgaven\packages\sdl2.2.0.5\build\native\lib\Win32\dynamic;C:\Users\bruker\Documents\CPLUSPLUS\CPlussInLev1\Oppgaven\SDL2_Standardproject\SDL;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>

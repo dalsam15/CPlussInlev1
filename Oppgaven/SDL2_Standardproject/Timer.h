@@ -40,12 +40,14 @@ public:
 
 	/* Returns total runtime in seconds, since init() */
 	float elapsedTime() const;
+
+	void resetTime();
 private:
 	Timer(); // Hidden constructor, initializing stuff
 	Timer(const Timer&); // Hidden copy constructor
 	Timer& operator=(const Timer&); // Hidden assigment op.
 
-	const time_point m_startTick; // time point at init
+	time_point m_startTick; // time point at init
 	time_point m_currentTick; // current time_point
 	time_point m_lastTick; // last frame's time_pooint
 	float m_deltaTime; // time since last frame

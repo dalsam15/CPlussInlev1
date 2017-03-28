@@ -10,7 +10,9 @@
 #include "GameManager.h"
 #include "InputManager.h"
 #include "Timer.h"
+#include <iostream>
 
+using namespace std;
 /* Initializes SDL, creates the game window and fires off the timer. */
 GameManager::GameManager()
 {
@@ -19,82 +21,110 @@ GameManager::GameManager()
 	Timer::Instance().init();
 }
 
-
-/* Kicks off/is the the gameloop */
 void GameManager::play()
 {
 	bool notGameOver = true;
 
 	// Load bitmaps
-	SDLBmp backround("Assets/gfx/sdl2.bmp");
+	SDLBmp background("Assets/gfx/sdl2.bmp");
 	SDLBmp player("Assets/gfx/sdl_bro.bmp");
+
+	background.draw();
 
 	// Calculate render frames per second (second / frames) (60)
 	float render_fps = 1.f / 60.f;
 	m_lastRender = render_fps; // set it to render immediately
 
-	// Gameloop
-	while (notGameOver)
-	{
-		// Update input and deltatime
-		InputManager::Instance().Update();
-		Timer::Instance().update();
+	while (notGameOver) {
+		handleInput();
+		gameLoopTimer(&player);
+		draw(&player, &background);
 
-		// Calculate displacement based on deltatime
-		float displacement = 150.F * Timer::Instance().deltaTime();
-
-		/* Input Management */
-
-		// Left key
-		if (InputManager::Instance().KeyDown(SDL_SCANCODE_LEFT) ||
-			InputManager::Instance().KeyStillDown(SDL_SCANCODE_LEFT))
-		{
-			player.x -= displacement;
-		}
-		
-		// Right key
-		if (InputManager::Instance().KeyDown(SDL_SCANCODE_RIGHT) ||
-			InputManager::Instance().KeyStillDown(SDL_SCANCODE_RIGHT))
-		{
-			player.x += displacement;
-		}
-
-		// Key up
-		if (InputManager::Instance().KeyDown(SDL_SCANCODE_UP) ||
-			InputManager::Instance().KeyStillDown(SDL_SCANCODE_UP))
-		{
-			player.y -= displacement;
-		}
-
-		// Key down
-		if (InputManager::Instance().KeyDown(SDL_SCANCODE_DOWN) ||
-			InputManager::Instance().KeyStillDown(SDL_SCANCODE_DOWN))
-		{
-			player.y += displacement;
-		}
-
-		// Exit on [Esc], or window close (user X-ed out the window)
-		if (InputManager::Instance().hasExit() || InputManager::Instance().KeyDown(SDL_SCANCODE_ESCAPE))
-		{
-			notGameOver = false;
-		}
-
-		// Update time since last render
-		m_lastRender += Timer::Instance().deltaTime();
-
-		// Check if it's time to render
-		if (m_lastRender >= render_fps)
-		{
-			// Add bitmaps to renderer
-			backround.draw();
-			player.draw();
-
-			// Render window
-			SDLManager::Instance().renderWindow(m_window);
-			m_lastRender = 0.f;
-		}
-
-		// Sleep to prevent CPU exthaustion (1ms == 1000 frames per second)
-		SDL_Delay(1);
 	}
 }
+
+void GameManager::gameLoopTimer(SDLBmp * player) {
+	Timer::Instance().update();
+	if (Timer::Instance().elapsedTime() > 1) {
+		Timer::Instance().resetTime();
+		cout << Timer::Instance().elapsedTime();
+		//gameLoopTimer(player);
+		gameLoop(player);
+	}
+}
+
+void GameManager::handleInput() {
+		 /* Input Management */
+
+		 // Left key
+		 SDL_Event e;
+		 SDL_PollEvent(&e);
+		 if (e.type == SDL_KEYDOWN) {
+			 switch (e.key.keysym.sym) {
+			 case SDLK_UP:
+				 if (currentDirection != down) {
+					 nextDirection = up;
+				 }
+				 break;
+			 case SDLK_DOWN:
+				 if (currentDirection != up) {
+					 nextDirection = down;
+				 }
+				 break;
+			 case SDLK_RIGHT:
+				 if (currentDirection != left) {
+					 nextDirection = right;
+				 }
+				 break;
+			 case SDLK_LEFT:
+				 if (currentDirection != right) {
+					 nextDirection = left;
+				 }
+				 break;
+			 }
+		 }
+
+	 }
+
+
+ void GameManager::gameLoop(SDLBmp * player) {
+	 currentDirection = nextDirection;
+	 switch (currentDirection) {
+	 case left:
+		 player->x -= 15;
+		 cout << "l!";
+		 break;
+	 case right:
+		 player->x += 15;
+		 cout << "r!";
+		 break;
+	 case up:
+		 player->y -= 15;
+		 cout << "u!";
+		 break;
+	 case down:
+		 player->y += 15;
+		 cout << "d!";
+		 break;
+	 }
+
+	 cout << "next direction";
+		 // Add bitmaps to renderer
+ }
+
+ void GameManager::draw(SDLBmp * player, SDLBmp * background) {
+	 if (m_lastRender >= 1 / 60);
+	 {
+		 // Add bitmaps to renderer
+		 background->draw();
+		 player->draw();
+		// nextCube.draw();
+
+		 // Render window
+		 SDLManager::Instance().renderWindow(m_window);
+		 m_lastRender = 0.f;
+
+		 SDLManager::Instance().renderWindow(m_window);
+
+	 }
+ }

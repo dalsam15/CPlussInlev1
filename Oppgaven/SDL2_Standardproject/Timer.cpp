@@ -44,3 +44,8 @@ float Timer::elapsedTime() const
 	milliseconds elapsed_ms = std::chrono::duration_cast<milliseconds>(m_currentTick - m_startTick);
 	return (static_cast<float>(elapsed_ms.count() / 1000.L));
 }
+
+void Timer::resetTime()
+{
+	m_startTick = m_currentTick;
+}
