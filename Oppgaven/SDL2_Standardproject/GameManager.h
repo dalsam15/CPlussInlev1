@@ -11,6 +11,7 @@
 #include "SDL/SDLBmp.h"
 #include "SDL/SDLManager.h"
 #include <vector>
+#include "GameObject.h"
 
 class GameManager
 {
@@ -24,6 +25,7 @@ public:
 		right
 	};
 
+
 	/* Meyer's singleton style instance call */
 	static GameManager& Instance()
 	{
@@ -33,13 +35,14 @@ public:
 
 	/* Kicks off/is the the gameloop */
 	void play();
-	void gameLoopTimer(SDLBmp * player);
+	void gameLoopTimer();
 	void handleInput();
-	void gameLoop(SDLBmp * player);
-	void MoveToRandomPosition(SDLBmp * object);
+	void gameLoop();
+	Vector2D * RandomPos();
 	int roundToTenths(int x);
 	int roundToFifty(int x);
-	void draw(SDLBmp * player, SDLBmp * background, SDLBmp *apple);
+	void draw();
+	void drawGameObject(GameObject);
 private:
 
 	GameManager();								// Hidden constructor
@@ -50,11 +53,25 @@ private:
 	 Direction nextDirection;
 	 float RandomFloat(float, float);
 	 int RandomInt(int a, int b);
+	 bool isColliding(GameObject a, GameObject b);
 	 bool isColliding(SDLBmp*, SDLBmp*);
 	unsigned int m_window; // pointer to main window
 	float m_lastRender; // Time in seconds since last render
 	std::vector<SDLBmp> snake;
 	std::vector<SDLBmp>::iterator snakeIterator;
+	GameObject snakeObject;
+	GameObject appleObject;
+
+
+	SDL_Surface*  snake_surface;
+	SDL_Surface*  apple_surface;
+
+	SDL_Texture*  snake_texture;
+	SDL_Texture*  apple_texture;
+
+	SDL_Renderer* renderer;
+
+
 };
 
 #endif

@@ -14,12 +14,31 @@
 #include <vector>
 
 using namespace std;
+
+
+
+#define TILE_SIZE 32
+
+
 /* Initializes SDL, creates the game window and fires off the timer. */
+
+SDL_Surface*  snake_surface = NULL;
+SDL_Surface*  apple_surface = NULL;
+
+SDL_Texture*  snake_texture = NULL;
+SDL_Texture*  apple_texture = NULL;
+
+SDL_Renderer* renderer = NULL;
+
 GameManager::GameManager()
 {
 	SDLManager::Instance().init();
-	m_window = SDLManager::Instance().createWindow("My Awesome SDL 2.0 Game");
+	m_window = SDLManager::Instance().createWindow("Amazing gasashiong");
+	renderer = SDLManager::Instance().getRenderer(m_window);
 	Timer::Instance().init();
+
+	
+
 }
 
 float GameManager:: RandomFloat(float a, float b) {
@@ -34,29 +53,47 @@ int GameManager::RandomInt(int a, int b) {
 	int r = random * diff;
 	return a + r;
 }
-bool GameManager::isColliding(SDLBmp *a, SDLBmp *b) {
-	float xDist = abs(a->x - b->x);
-	float yDist = abs(a->y - b->y);
+bool GameManager::isColliding(GameObject a, GameObject b) {
+	return (a.position->x == b.position->x && a.position->y == b.position->y); //operation overloading?
+	/*
+	float xDist = abs((a.position->x - b.position->x);
+	float yDist = abs(a.position->y - b.position->y);
 	float totaltDist = xDist + yDist;
 	if (totaltDist < 50) {
 		return true;
 	}
 	return false;
+	*/
 }
 
 void GameManager::play()
 {
+	currentDirection = right;
+	nextDirection = right;
+	SDL_Window *window = NULL;
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+	}
+	atexit(SDL_Quit);
+	//SDL_CreateWindowAndRenderer(800, 480, 0, SDLManager::Instance().getMainWindow, SDLManager::Instance().getRenderer);
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_RenderClear(renderer);
+	SDL_RenderPresent(renderer);
+	apple_surface = SDL_LoadBMP("Assets/gfx/apple.bmp");
+	snake_surface = SDL_LoadBMP("Assets/gfx/sdl_bro.bmp");
+	snake_texture = SDL_CreateTextureFromSurface(renderer, snake_surface);
+	apple_texture = SDL_CreateTextureFromSurface(renderer, apple_surface);
+
+	snakeObject.position = new Vector2D(5, 5);
+	snakeObject.texture = snake_texture;
+
+	appleObject.position = RandomPos();
+	appleObject.texture = apple_texture;
+
+
+
+
 	bool notGameOver = true;
-
-	// Load bitmaps
-	SDLBmp background("Assets/gfx/sdl2.bmp");
-	SDLBmp player("Assets/gfx/sdl_bro.bmp");
-	SDLBmp apple("Assets/gfx/sdl_bro.bmp");
-
-	MoveToRandomPosition(&apple);
-	
-	background.draw();
-	apple.draw();
 
 	// Calculate render frames per second (second / frames) (60)
 	float render_fps = 1.f / 60.f;
@@ -64,19 +101,19 @@ void GameManager::play()
 
 	while (notGameOver) {
 		handleInput();
-		gameLoopTimer(&player);
-		draw(&player, &background, &apple);
+		gameLoopTimer();
+		draw();
 
 	}
 }
 
-void GameManager::gameLoopTimer(SDLBmp * player) {
+void GameManager::gameLoopTimer() {
 	Timer::Instance().update();
 	if (Timer::Instance().elapsedTime() > 1) {
 		Timer::Instance().resetTime();
 		cout << Timer::Instance().elapsedTime();
 		//gameLoopTimer(player);
-		gameLoop(player);
+		gameLoop();
 	}
 }
 
@@ -115,46 +152,46 @@ void GameManager::handleInput() {
 	 }
 
 
- void GameManager::gameLoop(SDLBmp * player) {
-
+ void GameManager::gameLoop() {
 	 for (snakeIterator = snake.begin();
 		 snakeIterator != snake.end();
 		 snakeIterator++)
 	 {
-		 snakeIterator->x = player->x + 32;
-		 snakeIterator->y = player->y - 12;
-		 cout << "drawing snake body at x: " << snakeIterator->x << ", y: " << snakeIterator->y << endl;
+		 //(snakeIterator)->x = player->x;
+		// (snakeIterator)->y = player->y;
 		 // cout << &snakeIterator << " ";
 		 //Should output 1 4 8
 	 }
 
+	 //newSnake->x = player->x;
+	 //newSnake->y = player->y;
+
 	 currentDirection = nextDirection;
 	 switch (currentDirection) {
 	 case left:
-		 player->x -= 50;
+		 snakeObject.position->x -= 1;
 		 break;
 	 case right:
-		 player->x += 50;
+		 snakeObject.position->x += 1;
 		 break;
 	 case up:
-		 player->y -= 50;
+		 snakeObject.position->y -= 1;
 		 break;
 	 case down:
-		 player->y += 50;
+		 snakeObject.position->y += 1;
 		 break;
 	 }
 
-	 cout << "py " << player->y << "px " << player->x << endl;
+	// cout << "py " << snakeHead.y << "px " << snakeHead.x << endl;
 		 // Add bitmaps to renderer
  }
- void GameManager::MoveToRandomPosition(SDLBmp * object) {
-	 int x = (int)RandomFloat(1, 550);
-	 int y = (int)RandomFloat(1, 350);
-	 x = roundToFifty(x);
-	 y = roundToFifty(y);
+ Vector2D* GameManager::RandomPos() {
+	 int x = (int)RandomFloat(1, 10);
+	 int y = (int)RandomFloat(1, 10);
+	// x = roundToFifty(x);
+	// y = roundToFifty(y);
 	 cout << "appley " << y << ", applex " << x << endl;
-	 object->x = x;
-	 object->y = y;
+	 return new Vector2D(x, y);
 
 	
 }
@@ -170,29 +207,41 @@ void GameManager::handleInput() {
 	 return floor(x + 0.5) * 50;
  }
 
- void GameManager::draw(SDLBmp * player, SDLBmp * background, SDLBmp *apple) {
+ void GameManager::draw() {
 	 if (m_lastRender >= 1 / 60);
 	 {
+		 SDL_RenderClear(renderer);
+
+		 drawGameObject(snakeObject);
+		 drawGameObject(appleObject);
+
+		 if (isColliding(snakeObject, appleObject)) {
+			 appleObject.position = RandomPos();
+
+			 //snake.push_back(SDLBmp("Assets/gfx/sdl_bro.bmp"));
+			 //cout << "score: " << snake.size() << endl;
+		 }
+		 /*
 		 // Add bitmaps to renderer
 		 background->draw();
 		 player->draw();
 		 apple->draw();
-
+		 newSnake->draw();
 		 if (isColliding(apple, player)) {
 			 MoveToRandomPosition(apple);
 
-			 SDLBmp newSnake("Assets/gfx/sdl_bro.bmp");
-			 snake.push_back(newSnake);
+			 snake.push_back(SDLBmp("Assets/gfx/sdl_bro.bmp"));
 			 cout << "score: " << snake.size() << endl;
 		 }
-
+		 
 		 for (snakeIterator = snake.begin();
 			 snakeIterator != snake.end();
 			 snakeIterator++)
 		 {
-			 snakeIterator->draw();
+			 cout << "snake iterator: " << snakeIterator->x << endl;
+			 (snakeIterator)->draw();
 		 }
-
+		 */
 		// nextCube.draw();
 
 		 // Render window
@@ -202,4 +251,14 @@ void GameManager::handleInput() {
 		 SDLManager::Instance().renderWindow(m_window);
 
 	 }
+ }
+
+ void GameManager::drawGameObject(GameObject gameObject)
+ {
+	 SDL_Rect rect;
+	 rect.h = TILE_SIZE;
+	 rect.w = TILE_SIZE;
+	 rect.x = gameObject.position->x * TILE_SIZE;
+	 rect.y = gameObject.position->y * TILE_SIZE;
+	 SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
  }
