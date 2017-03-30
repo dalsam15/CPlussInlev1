@@ -11,6 +11,7 @@
 #include "InputManager.h"
 #include "Timer.h"
 #include <iostream>
+#include <vector>
 
 using namespace std;
 /* Initializes SDL, creates the game window and fires off the timer. */
@@ -27,12 +28,17 @@ float GameManager:: RandomFloat(float a, float b) {
 	float r = random * diff;
 	return a + r;
 }
+int GameManager::RandomInt(int a, int b) {
+	int random = ((int)rand()) / (int)RAND_MAX;
+	int diff = b - a;
+	int r = random * diff;
+	return a + r;
+}
 bool GameManager::isColliding(SDLBmp *a, SDLBmp *b) {
-	float xDist = abs(abs(a->x - b->x) - 25);
-	float yDist = abs(abs(a->y - b->y) - 25);
+	float xDist = abs(a->x - b->x);
+	float yDist = abs(a->y - b->y);
 	float totaltDist = xDist + yDist;
-//	cout << totaltDist << endl;
-	if (totaltDist < 40) {
+	if (totaltDist < 50) {
 		return true;
 	}
 	return false;
@@ -47,8 +53,7 @@ void GameManager::play()
 	SDLBmp player("Assets/gfx/sdl_bro.bmp");
 	SDLBmp apple("Assets/gfx/sdl_bro.bmp");
 
-	apple.x = RandomFloat(1.f, 50.f); // fra 0 til 350
-	apple.y = RandomFloat(1.f, 50.f); // fra o til 550
+	MoveToRandomPosition(&apple);
 	
 	background.draw();
 	apple.draw();
@@ -111,28 +116,58 @@ void GameManager::handleInput() {
 
 
  void GameManager::gameLoop(SDLBmp * player) {
+
+	 for (snakeIterator = snake.begin();
+		 snakeIterator != snake.end();
+		 snakeIterator++)
+	 {
+		 snakeIterator->x = player->x + 32;
+		 snakeIterator->y = player->y - 12;
+		 cout << "drawing snake body at x: " << snakeIterator->x << ", y: " << snakeIterator->y << endl;
+		 // cout << &snakeIterator << " ";
+		 //Should output 1 4 8
+	 }
+
 	 currentDirection = nextDirection;
 	 switch (currentDirection) {
 	 case left:
-		 player->x -= 10;
-		 cout << "l!";
+		 player->x -= 50;
 		 break;
 	 case right:
-		 player->x += 10;
-		 cout << "r!";
+		 player->x += 50;
 		 break;
 	 case up:
-		 player->y -= 10;
-		 cout << "u!";
+		 player->y -= 50;
 		 break;
 	 case down:
-		 player->y += 10;
-		 cout << "d!";
+		 player->y += 50;
 		 break;
 	 }
 
-	 cout << "next direction";
+	 cout << "py " << player->y << "px " << player->x << endl;
 		 // Add bitmaps to renderer
+ }
+ void GameManager::MoveToRandomPosition(SDLBmp * object) {
+	 int x = (int)RandomFloat(1, 550);
+	 int y = (int)RandomFloat(1, 350);
+	 x = roundToFifty(x);
+	 y = roundToFifty(y);
+	 cout << "appley " << y << ", applex " << x << endl;
+	 object->x = x;
+	 object->y = y;
+
+	
+}
+
+ int GameManager::roundToTenths(int x)
+ {
+	 x /= 10;
+	 return floor(x + 0.5) * 10;
+ }
+ int GameManager::roundToFifty(int x)
+ {
+	 x /= 50;
+	 return floor(x + 0.5) * 50;
  }
 
  void GameManager::draw(SDLBmp * player, SDLBmp * background, SDLBmp *apple) {
@@ -144,14 +179,18 @@ void GameManager::handleInput() {
 		 apple->draw();
 
 		 if (isColliding(apple, player)) {
-			 int x = RandomFloat(1, 550);
-			 int y= RandomFloat(1, 350);
-			 x = (x * 10) / 10;
-			 y = (y * 10) / 10;
+			 MoveToRandomPosition(apple);
 
-			 apple->x = x;
-			 apple->y = y;
-			 apple->draw();
+			 SDLBmp newSnake("Assets/gfx/sdl_bro.bmp");
+			 snake.push_back(newSnake);
+			 cout << "score: " << snake.size() << endl;
+		 }
+
+		 for (snakeIterator = snake.begin();
+			 snakeIterator != snake.end();
+			 snakeIterator++)
+		 {
+			 snakeIterator->draw();
 		 }
 
 		// nextCube.draw();
