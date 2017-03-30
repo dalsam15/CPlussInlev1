@@ -39,8 +39,8 @@ public:
 	void handleInput();
 	void gameLoop();
 	Vector2D * RandomPos();
-	int roundToTenths(int x);
-	int roundToFifty(int x);
+	//int roundToTenths(int x);
+	//int roundToFifty(int x);
 	void draw();
 	void drawGameObject(GameObject);
 private:
@@ -54,11 +54,10 @@ private:
 	 float RandomFloat(float, float);
 	 int RandomInt(int a, int b);
 	 bool isColliding(GameObject a, GameObject b);
-	 bool isColliding(SDLBmp*, SDLBmp*);
 	unsigned int m_window; // pointer to main window
 	float m_lastRender; // Time in seconds since last render
-	std::vector<SDLBmp> snake;
-	std::vector<SDLBmp>::iterator snakeIterator;
+	std::vector<GameObject> snake;
+	std::vector<GameObject>::iterator snakeIterator;
 	GameObject snakeObject;
 	GameObject appleObject;
 

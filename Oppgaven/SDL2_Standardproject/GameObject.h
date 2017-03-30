@@ -9,7 +9,7 @@ public:
 	GameObject();
 	~GameObject();
 
-	Vector2D * position;
+	Vector2D *position;
 	SDL_Texture * texture;
 };
 

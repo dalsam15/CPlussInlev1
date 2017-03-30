@@ -157,6 +157,8 @@ void GameManager::handleInput() {
 		 snakeIterator != snake.end();
 		 snakeIterator++)
 	 {
+		 snakeIterator._Ptr->position->x = snakeObject.position->x;
+		 snakeIterator._Ptr->position->y = snakeObject.position->y;
 		 //(snakeIterator)->x = player->x;
 		// (snakeIterator)->y = player->y;
 		 // cout << &snakeIterator << " ";
@@ -190,12 +192,12 @@ void GameManager::handleInput() {
 	 int y = (int)RandomFloat(1, 10);
 	// x = roundToFifty(x);
 	// y = roundToFifty(y);
-	 cout << "appley " << y << ", applex " << x << endl;
+	// cout << "appley " << y << ", applex " << x << endl;
 	 return new Vector2D(x, y);
 
 	
 }
-
+ /*
  int GameManager::roundToTenths(int x)
  {
 	 x /= 10;
@@ -206,7 +208,7 @@ void GameManager::handleInput() {
 	 x /= 50;
 	 return floor(x + 0.5) * 50;
  }
-
+ */
  void GameManager::draw() {
 	 if (m_lastRender >= 1 / 60);
 	 {
@@ -217,10 +219,18 @@ void GameManager::handleInput() {
 
 		 if (isColliding(snakeObject, appleObject)) {
 			 appleObject.position = RandomPos();
-
-			 //snake.push_back(SDLBmp("Assets/gfx/sdl_bro.bmp"));
-			 //cout << "score: " << snake.size() << endl;
+			 GameObject *newBody = new GameObject();
+			 newBody->texture = snake_texture;
+			 snake.push_back(*newBody);
 		 }
+
+		 for (snakeIterator = snake.begin();
+			 snakeIterator != snake.end();
+			 snakeIterator++)
+		 {
+			 drawGameObject((*snakeIterator._Ptr));
+		 }
+
 		 /*
 		 // Add bitmaps to renderer
 		 background->draw();
