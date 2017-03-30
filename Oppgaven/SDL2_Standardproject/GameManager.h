@@ -45,7 +45,7 @@ private:
 	 Direction currentDirection;
 	 Direction nextDirection;
 	 float RandomFloat(float, float);
-	 bool isColliding(SDLBmp&, SDLBmp&);
+	 bool isColliding(SDLBmp*, SDLBmp*);
 	unsigned int m_window; // pointer to main window
 	float m_lastRender; // Time in seconds since last render
 };

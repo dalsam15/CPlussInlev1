@@ -27,10 +27,11 @@ float GameManager:: RandomFloat(float a, float b) {
 	float r = random * diff;
 	return a + r;
 }
-bool GameManager::isColliding(SDLBmp &a, SDLBmp &b) {
-	float xDist = abs(abs(a.x - b.x) - 25);
-	float yDist = abs(abs(a.y - b.y) - 25);
+bool GameManager::isColliding(SDLBmp *a, SDLBmp *b) {
+	float xDist = abs(abs(a->x - b->x) - 25);
+	float yDist = abs(abs(a->y - b->y) - 25);
 	float totaltDist = xDist + yDist;
+	cout << totaltDist << endl;
 	if (totaltDist < 40) {
 		return true;
 	}
@@ -46,8 +47,8 @@ void GameManager::play()
 	SDLBmp player("Assets/gfx/sdl_bro.bmp");
 	SDLBmp apple("Assets/gfx/sdl_bro.bmp");
 
-	apple.x = RandomFloat(1.f, 50.f);
-	apple.y = RandomFloat(1.f, 50.f);
+	apple.x = RandomFloat(1.f, 50.f); // fra 0 til 350
+	apple.y = RandomFloat(1.f, 50.f); // fra o til 550
 	
 	background.draw();
 	apple.draw();
@@ -141,6 +142,12 @@ void GameManager::handleInput() {
 		 background->draw();
 		 player->draw();
 		 apple->draw();
+
+		 if (isColliding(apple, player)) {
+			 apple->x = RandomFloat(1, 550);
+			 apple->y = RandomFloat(1, 350);
+			 apple->draw();
+		 }
 
 		// nextCube.draw();
 
