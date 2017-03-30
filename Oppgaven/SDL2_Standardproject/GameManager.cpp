@@ -31,7 +31,7 @@ bool GameManager::isColliding(SDLBmp *a, SDLBmp *b) {
 	float xDist = abs(abs(a->x - b->x) - 25);
 	float yDist = abs(abs(a->y - b->y) - 25);
 	float totaltDist = xDist + yDist;
-	cout << totaltDist << endl;
+//	cout << totaltDist << endl;
 	if (totaltDist < 40) {
 		return true;
 	}
@@ -114,19 +114,19 @@ void GameManager::handleInput() {
 	 currentDirection = nextDirection;
 	 switch (currentDirection) {
 	 case left:
-		 player->x -= 15;
+		 player->x -= 10;
 		 cout << "l!";
 		 break;
 	 case right:
-		 player->x += 15;
+		 player->x += 10;
 		 cout << "r!";
 		 break;
 	 case up:
-		 player->y -= 15;
+		 player->y -= 10;
 		 cout << "u!";
 		 break;
 	 case down:
-		 player->y += 15;
+		 player->y += 10;
 		 cout << "d!";
 		 break;
 	 }
@@ -144,8 +144,13 @@ void GameManager::handleInput() {
 		 apple->draw();
 
 		 if (isColliding(apple, player)) {
-			 apple->x = RandomFloat(1, 550);
-			 apple->y = RandomFloat(1, 350);
+			 int x = RandomFloat(1, 550);
+			 int y= RandomFloat(1, 350);
+			 x = (x * 10) / 10;
+			 y = (y * 10) / 10;
+
+			 apple->x = x;
+			 apple->y = y;
 			 apple->draw();
 		 }
 
