@@ -30,14 +30,15 @@ SDL_Texture*  apple_texture = NULL;
 
 SDL_Renderer* renderer = NULL;
 
+vector<GameObject> *vect = new vector<GameObject>;
+
+
 GameManager::GameManager()
 {
 	SDLManager::Instance().init();
 	m_window = SDLManager::Instance().createWindow("Amazing gasashiong");
 	renderer = SDLManager::Instance().getRenderer(m_window);
 	Timer::Instance().init();
-
-	
 
 }
 
@@ -55,15 +56,7 @@ int GameManager::RandomInt(int a, int b) {
 }
 bool GameManager::isColliding(GameObject a, GameObject b) {
 	return (a.position->x == b.position->x && a.position->y == b.position->y); //operation overloading?
-	/*
-	float xDist = abs((a.position->x - b.position->x);
-	float yDist = abs(a.position->y - b.position->y);
-	float totaltDist = xDist + yDist;
-	if (totaltDist < 50) {
-		return true;
-	}
-	return false;
-	*/
+
 }
 
 void GameManager::play()
@@ -84,8 +77,14 @@ void GameManager::play()
 	snake_texture = SDL_CreateTextureFromSurface(renderer, snake_surface);
 	apple_texture = SDL_CreateTextureFromSurface(renderer, apple_surface);
 
+	
+	
 	snakeObject.position = new Vector2D(5, 5);
 	snakeObject.texture = snake_texture;
+	GameObject * snakePointer = &snakeObject;
+	vect.push_back(snakePointer);
+	cout << "original snake size: " << vect.size();
+
 
 	appleObject.position = RandomPos();
 	appleObject.texture = apple_texture;
@@ -153,20 +152,31 @@ void GameManager::handleInput() {
 
 
  void GameManager::gameLoop() {
-	 for (snakeIterator = snake.begin();
-		 snakeIterator != snake.end();
-		 snakeIterator++)
-	 {
-		 snakeIterator._Ptr->position->x = snakeObject.position->x;
-		 snakeIterator._Ptr->position->y = snakeObject.position->y;
-		 //(snakeIterator)->x = player->x;
-		// (snakeIterator)->y = player->y;
-		 // cout << &snakeIterator << " ";
-		 //Should output 1 4 8
+
+	 cout << "snake size: " + snake.size();
+
+	 for (int i = (snake.size() -1 ); i > 0; i--) {
+		 cout << "changing snake pos";
+			 snake[i]->position = snake[i - 1]->position;
 	 }
 
-	 //newSnake->x = player->x;
-	 //newSnake->y = player->y;
+	 /*
+	 int index = 0;
+	 for (snakeIterator = snake.begin();snakeIterator != snake.end(); snakeIterator++){
+
+		 snakeIterator._Ptr->position->x = snakeObject.position->x;
+		 snakeIterator._Ptr->position->y = snakeObject.position->y;
+		
+
+
+		 index++;
+		 
+		 
+	
+	 }
+	 */
+
+
 
 	 currentDirection = nextDirection;
 	 switch (currentDirection) {
@@ -184,31 +194,16 @@ void GameManager::handleInput() {
 		 break;
 	 }
 
-	// cout << "py " << snakeHead.y << "px " << snakeHead.x << endl;
-		 // Add bitmaps to renderer
  }
  Vector2D* GameManager::RandomPos() {
 	 int x = (int)RandomFloat(1, 10);
 	 int y = (int)RandomFloat(1, 10);
-	// x = roundToFifty(x);
-	// y = roundToFifty(y);
-	// cout << "appley " << y << ", applex " << x << endl;
+
 	 return new Vector2D(x, y);
 
 	
 }
- /*
- int GameManager::roundToTenths(int x)
- {
-	 x /= 10;
-	 return floor(x + 0.5) * 10;
- }
- int GameManager::roundToFifty(int x)
- {
-	 x /= 50;
-	 return floor(x + 0.5) * 50;
- }
- */
+
  void GameManager::draw() {
 	 if (m_lastRender >= 1 / 60);
 	 {
@@ -221,38 +216,15 @@ void GameManager::handleInput() {
 			 appleObject.position = RandomPos();
 			 GameObject *newBody = new GameObject();
 			 newBody->texture = snake_texture;
-			 snake.push_back(*newBody);
+			 snake.push_back(newBody);
 		 }
 
 		 for (snakeIterator = snake.begin();
 			 snakeIterator != snake.end();
 			 snakeIterator++)
 		 {
-			 drawGameObject((*snakeIterator._Ptr));
+			 drawGameObject(**snakeIterator._Ptr);
 		 }
-
-		 /*
-		 // Add bitmaps to renderer
-		 background->draw();
-		 player->draw();
-		 apple->draw();
-		 newSnake->draw();
-		 if (isColliding(apple, player)) {
-			 MoveToRandomPosition(apple);
-
-			 snake.push_back(SDLBmp("Assets/gfx/sdl_bro.bmp"));
-			 cout << "score: " << snake.size() << endl;
-		 }
-		 
-		 for (snakeIterator = snake.begin();
-			 snakeIterator != snake.end();
-			 snakeIterator++)
-		 {
-			 cout << "snake iterator: " << snakeIterator->x << endl;
-			 (snakeIterator)->draw();
-		 }
-		 */
-		// nextCube.draw();
 
 		 // Render window
 		 SDLManager::Instance().renderWindow(m_window);
