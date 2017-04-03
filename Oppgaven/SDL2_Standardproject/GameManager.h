@@ -38,11 +38,13 @@ public:
 	void gameLoopTimer();
 	void handleInput();
 	void gameLoop();
+	bool IsGameOver();
 	Vector2D  RandomPos();
 	//int roundToTenths(int x);
 	//int roundToFifty(int x);
 	void draw();
 	void drawGameObject(GameObject);
+	void addSnakeBody();
 private:
 
 	GameManager();								// Hidden constructor

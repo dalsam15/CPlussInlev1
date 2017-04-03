@@ -1,0 +1,4 @@
+1- game over page 
+2- Submit name
+3- show list of players and results 
+4- create a DB and insert data there 

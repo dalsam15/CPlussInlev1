@@ -18,6 +18,8 @@ using namespace std;
 
 
 #define TILE_SIZE 32
+#define BOARD_WIDTH 15
+#define BOARD_HEIGHT 15
 
 
 /* Initializes SDL, creates the game window and fires off the timer. */
@@ -36,7 +38,7 @@ SDL_Renderer* renderer = NULL;
 GameManager::GameManager()
 {
 	SDLManager::Instance().init();
-	m_window = SDLManager::Instance().createWindow("Amazing gasashiong");
+	m_window = SDLManager::Instance().createWindow("Amazing gasashiong", (TILE_SIZE * BOARD_WIDTH), (TILE_SIZE * BOARD_HEIGHT));
 	renderer = SDLManager::Instance().getRenderer(m_window);
 	Timer::Instance().init();
 	//GameManager::snake;
@@ -78,13 +80,13 @@ void GameManager::play()
 	snake_texture = SDL_CreateTextureFromSurface(renderer, snake_surface);
 	apple_texture = SDL_CreateTextureFromSurface(renderer, apple_surface);
 
+	for (int i = 0; i < 4; i++) {
+		addSnakeBody();
+		snake[i].position.x = 5 - i;
+		snake[i].position.y = 5;
+	}
 	
-	GameObject snakeObject;
-	snakeObject.position.x = 5;
-	snakeObject.position.y = 5;
-	snakeObject.texture = snake_texture;
-	
-	snake.push_back(snakeObject);
+
 	//cout << "original snake size: " << snake.size() << endl;
 
 
@@ -103,7 +105,7 @@ void GameManager::play()
 	while (notGameOver) {
 		handleInput();
 		gameLoopTimer();
-		draw();
+
 
 	}
 }
@@ -155,32 +157,18 @@ void GameManager::handleInput() {
 
  void GameManager::gameLoop() {
 
-
+	 if (isColliding(snake[0], appleObject)) {
+		 appleObject.position = RandomPos();
+		 addSnakeBody();
+	 }
 
 	 for (int i = (snake.size() -1 ); i > 0; i--) {
 		 
 		 snake[i].position.x = snake[i - 1].position.x;
 		 snake[i].position.y = snake[i - 1].position.y;
-			 cout << i << " X " << snake[i - 1].position.x << endl;
-			 cout << i << " Y " << snake[i - 1].position.y << endl;
 	 }
 
-	 /*
-	 int index = 0;
-	 for (snakeIterator = snake.begin();snakeIterator != snake.end(); snakeIterator++){
-
-		 snakeIterator._Ptr->position->x = snakeObject.position->x;
-		 snakeIterator._Ptr->position->y = snakeObject.position->y;
-		
-
-
-		 index++;
-		 
-		 
-	
-	 }
-	 */
-
+	 
 
 
 	 currentDirection = nextDirection;
@@ -198,8 +186,29 @@ void GameManager::handleInput() {
 		 snake[0].position.y += 1;
 		 break;
 	 }
+	 if (IsGameOver()) {
+		 cout << "oops..." << endl;
+	 }
 
+	 draw();
  }
+
+ bool GameManager::IsGameOver(){
+	 for (int i = 0; i < snake.size(); i++) {
+		 for (int j = 0; j < snake.size(); j++) {
+			 if (isColliding(snake[i], snake[j]) && j != i) {
+				 return true;
+			 }
+		 }
+	 }
+	 cout << "x: " << snake[0].position.x << "y: " << snake[0].position.y << endl;
+	 if (snake[0].position.x < 0) return true;
+	 if (snake[0].position.x > BOARD_WIDTH -1 ) return true;
+	 if (snake[0].position.y < 0) return true;
+	 if (snake[0].position.y > BOARD_HEIGHT -1) return true;
+
+	 return false;
+}
  Vector2D GameManager::RandomPos() {
 	 int x = (int)RandomFloat(1, 10);
 	 int y = (int)RandomFloat(1, 10);
@@ -211,19 +220,13 @@ void GameManager::handleInput() {
 
  void GameManager::draw() {
 	
-	 if (m_lastRender >= 1 / 60);
-	 {
+	
 		 SDL_RenderClear(renderer);
 
-		 //drawGameObject(snakeObject);
+		
 		 drawGameObject(appleObject);
 
-		 if (isColliding(snake[0], appleObject)) {
-			 appleObject.position = RandomPos();
-			 GameObject newBody;
-			 newBody.texture = snake_texture;
-			 snake.push_back(newBody);
-		 }
+		 
 
 		 for (snakeIterator = snake.begin();
 			 snakeIterator != snake.end();
@@ -239,7 +242,7 @@ void GameManager::handleInput() {
 
 		 SDLManager::Instance().renderWindow(m_window);
 
-	 }
+	 
  }
 
  void GameManager::drawGameObject(GameObject gameObject)
@@ -251,4 +254,11 @@ void GameManager::handleInput() {
 	 rect.y = gameObject.position.y * TILE_SIZE;
 	 SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
 	
+ }
+
+ void GameManager::addSnakeBody()
+ {
+	 GameObject newBody;
+	 newBody.texture = snake_texture;
+	 snake.push_back(newBody);
  }
