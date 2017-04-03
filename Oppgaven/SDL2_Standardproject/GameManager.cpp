@@ -30,7 +30,7 @@ SDL_Texture*  apple_texture = NULL;
 
 SDL_Renderer* renderer = NULL;
 
-vector<GameObject> *vect = new vector<GameObject>;
+
 
 
 GameManager::GameManager()
@@ -39,6 +39,7 @@ GameManager::GameManager()
 	m_window = SDLManager::Instance().createWindow("Amazing gasashiong");
 	renderer = SDLManager::Instance().getRenderer(m_window);
 	Timer::Instance().init();
+	//GameManager::snake;
 
 }
 
@@ -81,9 +82,9 @@ void GameManager::play()
 	
 	snakeObject.position = new Vector2D(5, 5);
 	snakeObject.texture = snake_texture;
-	GameObject * snakePointer = &snakeObject;
-	vect.push_back(snakePointer);
-	cout << "original snake size: " << vect.size();
+	
+	snake.push_back(snakeObject);
+	cout << "original snake size: " << snake.size() << endl;
 
 
 	appleObject.position = RandomPos();
@@ -153,11 +154,11 @@ void GameManager::handleInput() {
 
  void GameManager::gameLoop() {
 
-	 cout << "snake size: " + snake.size();
+	 cout << snake.size() << endl;
 
 	 for (int i = (snake.size() -1 ); i > 0; i--) {
 		 cout << "changing snake pos";
-			 snake[i]->position = snake[i - 1]->position;
+			 snake[i].position = snake[i - 1].position;
 	 }
 
 	 /*
@@ -205,6 +206,7 @@ void GameManager::handleInput() {
 }
 
  void GameManager::draw() {
+	
 	 if (m_lastRender >= 1 / 60);
 	 {
 		 SDL_RenderClear(renderer);
@@ -214,8 +216,8 @@ void GameManager::handleInput() {
 
 		 if (isColliding(snakeObject, appleObject)) {
 			 appleObject.position = RandomPos();
-			 GameObject *newBody = new GameObject();
-			 newBody->texture = snake_texture;
+			 GameObject newBody;
+			 newBody.texture = snake_texture;
 			 snake.push_back(newBody);
 		 }
 
@@ -223,7 +225,7 @@ void GameManager::handleInput() {
 			 snakeIterator != snake.end();
 			 snakeIterator++)
 		 {
-			 drawGameObject(**snakeIterator._Ptr);
+			 drawGameObject(*snakeIterator._Ptr);
 		 }
 
 		 // Render window
@@ -243,4 +245,5 @@ void GameManager::handleInput() {
 	 rect.x = gameObject.position->x * TILE_SIZE;
 	 rect.y = gameObject.position->y * TILE_SIZE;
 	 SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
+	
  }

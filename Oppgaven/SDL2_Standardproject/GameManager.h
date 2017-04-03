@@ -56,8 +56,8 @@ private:
 	 bool isColliding(GameObject a, GameObject b);
 	unsigned int m_window; // pointer to main window
 	float m_lastRender; // Time in seconds since last render
-	std::vector<GameObject *> snake;
-	std::vector<GameObject *>::iterator snakeIterator;
+	std::vector<GameObject > snake;
+	std::vector<GameObject >::iterator snakeIterator;
 	GameObject snakeObject;
 	GameObject appleObject;
 
