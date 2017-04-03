@@ -4,7 +4,9 @@
 
 GameObject::GameObject()
 {
-	position = new Vector2D(0,0);
+	position.x = 0;
+	position.y = 0;
+		
 }
 
 

@@ -1,6 +1,9 @@
 #include "Vector2D.h"
 
-
+Vector2D::Vector2D()
+{
+	Vector2D(0, 0);
+}
 
 Vector2D::Vector2D(int newX, int newY)
 {
