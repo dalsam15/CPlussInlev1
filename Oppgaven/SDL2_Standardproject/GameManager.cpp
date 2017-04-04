@@ -15,6 +15,9 @@
 #include <chrono>
 
 
+#include <SDL.h>
+#include <SDL_image.h>
+
 using namespace std;
 
 
@@ -39,6 +42,7 @@ SDL_Renderer* renderer = NULL;
 
 bool notGameOver = true;
 bool recivedUserInfo = false;
+
 
 
 GameManager::GameManager()
@@ -84,9 +88,14 @@ void GameManager::play()
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 	SDL_RenderPresent(renderer);
-	apple_surface = SDL_LoadBMP("Assets/gfx/apple.bmp");
-	snake_surface = SDL_LoadBMP("Assets/gfx/sdl_bro.bmp");
+	//apple_surface = SDL_LoadBMP("Assets/gfx/apple.bmp");
+	snake_surface = IMG_Load("Assets/gfx/snake body.png");
+	SDL_Surface * snakeHead_surface = IMG_Load("Assets/gfx/snake head.png");
+	apple_surface = IMG_Load("Assets/gfx/apple.png");
+
 	snake_texture = SDL_CreateTextureFromSurface(renderer, snake_surface);
+	SDL_Texture*  snakeHead_texture = SDL_CreateTextureFromSurface(renderer, snakeHead_surface
+	);
 	apple_texture = SDL_CreateTextureFromSurface(renderer, apple_surface);
 
 	for (int i = 0; i < 4; i++) {
@@ -94,6 +103,7 @@ void GameManager::play()
 		snake[i].position.x = 5 - i;
 		snake[i].position.y = 5;
 	}
+	snake[0].texture = snakeHead_texture;
 	
 
 	//cout << "original snake size: " << snake.size() << endl;
@@ -145,21 +155,29 @@ void GameManager::handleInput() {
 			 case SDLK_UP:
 				 if (currentDirection != down) {
 					 nextDirection = up;
+					 snake[0].transform.flip = SDL_FLIP_NONE;
+					 snake[0].transform.rotation = -90;
 				 }
 				 break;
 			 case SDLK_DOWN:
 				 if (currentDirection != up) {
 					 nextDirection = down;
+					 snake[0].transform.flip = SDL_FLIP_NONE;
+					 snake[0].transform.rotation = 90;
 				 }
 				 break;
 			 case SDLK_RIGHT:
 				 if (currentDirection != left) {
 					 nextDirection = right;
+					 snake[0].transform.flip = SDL_FLIP_NONE;
+					 snake[0].transform.rotation = 0;
 				 }
 				 break;
 			 case SDLK_LEFT:
 				 if (currentDirection != right) {
 					 nextDirection = left;
+					 snake[0].transform.flip = SDL_FLIP_HORIZONTAL;
+					 snake[0].transform.rotation = 0;
 				 }
 				 break;
 			 }
@@ -250,8 +268,7 @@ void GameManager::handleInput() {
 			 drawGameObject(*snakeIterator);
 			 
 		 }
-
-		 // Render window
+		  //Render window
 		 SDLManager::Instance().renderWindow(m_window);
 		 m_lastRender = 0.f;
 
@@ -267,7 +284,8 @@ void GameManager::handleInput() {
 	 rect.w = TILE_SIZE;
 	 rect.x = gameObject.position.x * TILE_SIZE;
 	 rect.y = gameObject.position.y * TILE_SIZE;
-	 SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
+	// SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
+	 SDL_RenderCopyEx(renderer, gameObject.texture, NULL, &rect, gameObject.transform.rotation, NULL, gameObject.transform.flip);
 	
  }
 

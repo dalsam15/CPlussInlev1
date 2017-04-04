@@ -44,6 +44,8 @@ public:
 	//int roundToFifty(int x);
 	void draw();
 	void drawGameObject(GameObject);
+	void drawGameObject(GameObject gameObject, SDL_RendererFlip flip, float angle);
+	//void drawGameObject(GameObject gameObject, bool flipX, bool flipY);
 	void addSnakeBody();
 	void showGameOver();
 private:
