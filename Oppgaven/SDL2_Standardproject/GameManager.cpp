@@ -31,10 +31,12 @@ using namespace std;
 
 SDL_Surface*  snake_surface = NULL;
 SDL_Surface*  apple_surface = NULL;
+//SDL_Surface* gameOver_surface = NULL;
 
 
 SDL_Texture*  snake_texture = NULL;
 SDL_Texture*  apple_texture = NULL;
+//SDL_Texture*  gameOver_texture = NULL;
 
 
 SDL_Renderer* renderer = NULL;
@@ -305,28 +307,23 @@ void GameManager::handleInput() {
 	 //SDL_SetRenderDrawColor(game_over_renderer, 255, 255, 255, 255);
 
 
+	 SDL_Surface * gameOver_surface = IMG_Load("Assets/gfx/bye.png");
+	 SDL_Texture * gameOver_texture = SDL_CreateTextureFromSurface(renderer, gameOver_surface);
+
 	 SDL_RenderClear(renderer);
 	 SDL_RenderPresent(renderer);
-	 SDL_Surface* gameOver_surface = SDL_LoadBMP("Assets\gfx\apple.bmp");
-	 SDL_Texture* gameOver_texture = SDL_CreateTextureFromSurface(renderer, gameOver_surface);
-	 GameObject test;
-	 test.texture = gameOver_texture;
-	 test.position.x = 5;
-	 test.position.y = 5;
-	 while (true) {
-		 
-		 
+	
 
-
-		 
-
-
-		 SDL_RenderClear(renderer);
-		 drawGameObject(test);
+	 SDL_Rect rect;
+	 rect.h = 400;
+	 rect.w = 400;
+	 rect.x = 50;
+	 rect.y = 50;
+	 // SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
+	 SDL_RenderCopyEx(renderer, gameOver_texture, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 		 //SDL_RenderCopy(renderer, gameOver_texture, NULL, NULL);
 		 SDLManager::Instance().renderWindow(m_window);
 		 _sleep(1); // pauses for 10 seconds
-	 }
 	 _sleep(10000); // pauses for 10 seconds
 	
  }

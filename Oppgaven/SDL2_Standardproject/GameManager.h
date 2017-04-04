@@ -69,13 +69,15 @@ private:
 
 	SDL_Surface*  snake_surface;
 	SDL_Surface*  apple_surface;
+	//SDL_Surface* gameOver_surface;
 
 	SDL_Texture*  snake_texture;
 	SDL_Texture*  apple_texture;
+	//SDL_Texture*  gameOver_texture;
 
 	SDL_Renderer* renderer;
 
-
+	//lol
 };
 
 #endif
