@@ -12,6 +12,8 @@
 #include "Timer.h"
 #include <iostream>
 #include <vector>
+#include <chrono>
+
 
 using namespace std;
 
@@ -27,20 +29,27 @@ using namespace std;
 SDL_Surface*  snake_surface = NULL;
 SDL_Surface*  apple_surface = NULL;
 
+
 SDL_Texture*  snake_texture = NULL;
 SDL_Texture*  apple_texture = NULL;
+
 
 SDL_Renderer* renderer = NULL;
 
 
+bool notGameOver = true;
+bool recivedUserInfo = false;
 
 
 GameManager::GameManager()
 {
 	SDLManager::Instance().init();
 	m_window = SDLManager::Instance().createWindow("Amazing gasashiong", (TILE_SIZE * BOARD_WIDTH), (TILE_SIZE * BOARD_HEIGHT));
+	
 	renderer = SDLManager::Instance().getRenderer(m_window);
+	
 	Timer::Instance().init();
+	
 	//GameManager::snake;
 
 }
@@ -96,17 +105,21 @@ void GameManager::play()
 
 
 
-	bool notGameOver = true;
+	
 
 	// Calculate render frames per second (second / frames) (60)
 	float render_fps = 1.f / 60.f;
 	m_lastRender = render_fps; // set it to render immediately
 
-	while (notGameOver) {
-		handleInput();
-		gameLoopTimer();
-
-
+	while (notGameOver ) {
+		if (!recivedUserInfo) {
+			handleInput();
+			gameLoopTimer();
+		}
+	}
+	if (!notGameOver) {
+		showGameOver();
+		recivedUserInfo = true;
 	}
 }
 
@@ -188,6 +201,8 @@ void GameManager::handleInput() {
 	 }
 	 if (IsGameOver()) {
 		 cout << "oops..." << endl;
+		 notGameOver = false;
+		 
 	 }
 
 	 draw();
@@ -261,4 +276,39 @@ void GameManager::handleInput() {
 	 GameObject newBody;
 	 newBody.texture = snake_texture;
 	 snake.push_back(newBody);
+ }
+
+ void GameManager::showGameOver()
+ { 
+	// m_gameOverWindow = SDLManager::Instance().createWindow("Game Over!!!");
+	// game_over_renderer = SDLManager::Instance().getRenderer(m_gameOverWindow);
+	 
+	 
+	 //SDL_SetRenderDrawColor(game_over_renderer, 255, 255, 255, 255);
+
+
+	 SDL_RenderClear(renderer);
+	 SDL_RenderPresent(renderer);
+	 SDL_Surface* gameOver_surface = SDL_LoadBMP("Assets\gfx\apple.bmp");
+	 SDL_Texture* gameOver_texture = SDL_CreateTextureFromSurface(renderer, gameOver_surface);
+	 GameObject test;
+	 test.texture = gameOver_texture;
+	 test.position.x = 5;
+	 test.position.y = 5;
+	 while (true) {
+		 
+		 
+
+
+		 
+
+
+		 SDL_RenderClear(renderer);
+		 drawGameObject(test);
+		 //SDL_RenderCopy(renderer, gameOver_texture, NULL, NULL);
+		 SDLManager::Instance().renderWindow(m_window);
+		 _sleep(1); // pauses for 10 seconds
+	 }
+	 _sleep(10000); // pauses for 10 seconds
+	
  }

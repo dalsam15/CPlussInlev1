@@ -45,6 +45,7 @@ public:
 	void draw();
 	void drawGameObject(GameObject);
 	void addSnakeBody();
+	void showGameOver();
 private:
 
 	GameManager();								// Hidden constructor
@@ -57,6 +58,7 @@ private:
 	 int RandomInt(int a, int b);
 	 bool isColliding(GameObject a, GameObject b);
 	unsigned int m_window; // pointer to main window
+	unsigned int m_gameOverWindow;
 	float m_lastRender; // Time in seconds since last render
 	std::vector<GameObject > snake;
 	std::vector<GameObject >::iterator snakeIterator;
