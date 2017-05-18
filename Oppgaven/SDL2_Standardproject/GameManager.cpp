@@ -45,7 +45,7 @@ SDL_Texture*  apple_texture = NULL;
 
 SDL_Renderer* renderer = NULL;
 
-
+bool running = true;
 bool notGameOver = true;
 bool recivedUserInfo = false;
 
@@ -130,18 +130,20 @@ void GameManager::play()
 	float render_fps = 1.f / 60.f;
 	m_lastRender = render_fps; // set it to render immediately
 
-	while (notGameOver ) {
-		if (!recivedUserInfo) {
-			handleInput();
-			gameLoopTimer();
+		while (notGameOver && running) {
+			if (!recivedUserInfo) {
+				handleInput();
+				gameLoopTimer();
+			}
 		}
-	}
-	if (!notGameOver) {
-		showGameOver();
-		recivedUserInfo = true;
-	}
+		if (!notGameOver && running) {
+			showGameOver();
+			recivedUserInfo = true;
+		}
+	
 
 	TTF_Quit();
+	//TTF free?
 }
 
 void GameManager::gameLoopTimer() {
@@ -162,6 +164,7 @@ void GameManager::handleInput() {
 		 SDL_PollEvent(&e);
 
 		 if (e.type == SDL_QUIT) {
+			 running = false;
 			 notGameOver = false;
 			 return;
 		 }
@@ -282,7 +285,7 @@ void GameManager::handleInput() {
 		// SDL_FreeSurface(textSurface);
 		 SDL_Rect box;
 		 box.w = 200;
-		 box.h = 20;
+		 box.h = 30;
 		 box.x = 25;
 		 box.y = 25;
 		 SDL_RenderCopy(renderer, text, NULL, &box);
