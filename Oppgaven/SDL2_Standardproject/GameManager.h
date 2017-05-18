@@ -54,6 +54,7 @@ public:
 	void addSnakeBody();
 	void showGameOver();
 	bool withinBounds(const SDL_Rect & rect, int x, int y);
+	void drawGameOverScore();
 	void drawHeader();
 private:
 
@@ -64,7 +65,6 @@ private:
 	 Direction currentDirection;
 	 Direction nextDirection;
 	 float RandomFloat(float, float);
-	 int RandomInt(int a, int b);
 	 bool isColliding(GameObject a, GameObject b);
 	unsigned int m_window; // pointer to main window
 	unsigned int m_gameOverWindow;

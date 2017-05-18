@@ -27,7 +27,8 @@ using namespace std;
 #define TILE_SIZE 32
 #define BOARD_WIDTH 15
 #define BOARD_HEIGHT 15
-#define HEADER_HEIGHT 50
+#define HEADER_HEIGHT 64
+#define SNAKE_START_LENGTH 4
 
 
 /* Initializes SDL, creates the game window and fires off the timer. */
@@ -42,6 +43,8 @@ SDL_Texture*  snake_texture = NULL;
 SDL_Texture*  apple_texture = NULL;
 SDL_Texture* snakeHead_texture = NULL;
 
+SDL_Texture* header_texture = NULL;
+
 SDL_Renderer* renderer = NULL;
 
 bool running = true;
@@ -52,6 +55,10 @@ SDL_Rect rectPlayAgain;
 SDL_Rect rectClose;
 SDL_Rect rect;
 
+SDL_Rect headerRect;
+
+SDL_Surface * header_surface;
+
 SDL_Surface * gameOver_surface;
 SDL_Texture * gameOver_texture;
 SDL_Surface * gameOver_PlayAgain;
@@ -60,10 +67,7 @@ SDL_Texture * gameOver_PlayAgainTX;
 SDL_Surface * gameOver_Close;
 SDL_Texture * gameOver_CloseTX;
 
-
-
-
-
+TTF_Font* font;
 
 GameManager::GameManager()
 {
@@ -79,12 +83,6 @@ float GameManager:: RandomFloat(float a, float b) {
 	float r = random * diff;
 	return a + r;
 }
-int GameManager::RandomInt(int a, int b) {
-	int random = ((int)rand()) / (int)RAND_MAX;
-	int diff = b - a;
-	int r = random * diff;
-	return a + r;
-}
 bool GameManager::isColliding(GameObject a, GameObject b) {
 	return (a.position.x == b.position.x && a.position.y == b.position.y); //operation overloading?
 }
@@ -98,7 +96,7 @@ void GameManager::initalizeNewGame() {
 	nextDirection = right;
 
 	//create snake body
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < SNAKE_START_LENGTH; i++) {
 		addSnakeBody();
 		snake[i].position.x = 5 - i;
 		snake[i].position.y = 5;
@@ -111,6 +109,13 @@ void GameManager::initalizeNewGame() {
 }
 
 void GameManager::initalizeGameSDL() {
+	TTF_Init();
+	font = TTF_OpenFont("Assets/fonts/junegull.ttf", 28);
+	if (font == NULL) {
+		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
+		return;
+	}
+
 	SDL_Window *window = NULL;
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
@@ -139,7 +144,8 @@ void GameManager::initalizeGameSDL() {
 	gameOver_Close = IMG_Load("Assets/gfx/giveup.png");
 	gameOver_CloseTX = SDL_CreateTextureFromSurface(renderer, gameOver_Close);
 
-	
+	header_surface = IMG_Load("Assets/gfx/header.png");
+	header_texture = SDL_CreateTextureFromSurface(renderer, header_surface);
 
 }
 
@@ -164,7 +170,7 @@ void GameManager::play()
 
 void GameManager::gameLoopTimer() {
 	Timer::Instance().update();
-	if (Timer::Instance().elapsedTime() > 1) {
+	if (Timer::Instance().elapsedTime() > 0.25f) {
 		Timer::Instance().resetTime();
 		 Timer::Instance().elapsedTime();
 
@@ -178,9 +184,6 @@ void GameManager::gameLoopTimer() {
 }
 
 void GameManager::handleInput() {
-		 /* Input Management */
-
-		 // Left key
 		 SDL_Event e;
 		 SDL_PollEvent(&e);
 
@@ -236,20 +239,24 @@ void GameManager::handleInput() {
  void GameManager::gameLoop() {
 
 	 if (isColliding(snake[0], appleObject)) {
-		 appleObject.position = RandomPos();
+		 bool foundValidApplePos = false;
+		 while (!foundValidApplePos) {
+			 appleObject.position = RandomPos();
+			 bool hasColliderWithAny = false;
+			 for (int i = 0; i < snake.size(); i++) {
+				 if (isColliding(snake[i], appleObject)) hasColliderWithAny = true;
+			 }
+			foundValidApplePos = !hasColliderWithAny;
+		 }
 		 addSnakeBody();
 		 score++;
 		 drawHeader();
 	 }
 
 	 for (int i = (snake.size() -1 ); i > 0; i--) {
-		 
 		 snake[i].position.x = snake[i - 1].position.x;
 		 snake[i].position.y = snake[i - 1].position.y;
 	 }
-
-	 
-
 
 	 currentDirection = nextDirection;
 	 switch (currentDirection) {
@@ -267,9 +274,7 @@ void GameManager::handleInput() {
 		 break;
 	 }
 	 if (IsGameOver()) {
-		 cout << "oops..." << endl;
 		 notGameOver = false;
-		 
 	 }
 
 	 draw();
@@ -283,21 +288,19 @@ void GameManager::handleInput() {
 			 }
 		 }
 	 }
-	 cout << "x: " << snake[0].position.x << "y: " << snake[0].position.y << endl;
+	 //cout << "x: " << snake[0].position.x << "y: " << snake[0].position.y << endl;
 	 if (snake[0].position.x < 0) return true;
 	 if (snake[0].position.x > BOARD_WIDTH -1 ) return true;
-	 if (snake[0].position.y < 0) return true;
-	 if (snake[0].position.y > BOARD_HEIGHT -1) return true;
+	 int headerPosInGrid = HEADER_HEIGHT / TILE_SIZE;
+	 if (snake[0].position.y < headerPosInGrid) return true;
+	 if (snake[0].position.y > BOARD_HEIGHT + 1) return true;
 
 	 return false;
 }
  Vector2D GameManager::RandomPos() {
-	 int x = (int)RandomFloat(1, 10);
-	 int y = (int)RandomFloat(1, 10);
-
+	 int x = (int)RandomFloat(1, BOARD_WIDTH);
+	 int y = (int)RandomFloat(1 + (HEADER_HEIGHT / TILE_SIZE), BOARD_HEIGHT);
 	 return Vector2D(x, y);
-
-	
 }
 
  void GameManager::draw() {
@@ -312,16 +315,15 @@ void GameManager::handleInput() {
 		 }
 
 		 // SDL_FreeSurface(textSurface);
+		 //TODO: this is shit
 		 SDL_Rect box;
 		 box.w = 200;
 		 box.h = 30;
-		 box.x = 25;
-		 box.y = 25;
+		 box.x = 10;
+		 box.y = HEADER_HEIGHT / 2;
+		 SDL_RenderCopy(renderer, header_texture, NULL, &headerRect);
 		 SDL_RenderCopy(renderer, text, NULL, &box);
-
 		 SDLManager::Instance().renderWindow(m_window);
-
-	 
  }
 
  void GameManager::drawGameObject(GameObject gameObject)
@@ -349,6 +351,7 @@ void GameManager::handleInput() {
 	 printf("kjører denne i det hele tatt?????");
 
 	 //TODO: these values are not nessecary to run all theF FUCKINGSS time
+
 	 rect.h = 200;
 	 rect.w = 400;
 	 rect.x = 25;
@@ -368,6 +371,9 @@ void GameManager::handleInput() {
 	 SDL_RenderCopyEx(renderer, gameOver_texture, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
 	 SDL_RenderCopyEx(renderer, gameOver_CloseTX, NULL, &rectClose, 0, NULL, SDL_FLIP_NONE);
 	 SDL_RenderCopyEx(renderer, gameOver_PlayAgainTX, NULL, &rectPlayAgain, 0, NULL, SDL_FLIP_NONE);
+
+	 drawGameOverScore();
+
 	 SDLManager::Instance().renderWindow(m_window);
  }
 
@@ -375,22 +381,30 @@ void GameManager::handleInput() {
 	 return(x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h);
  }
 
- void GameManager::drawHeader() {
-	 printf("jeg elsker skolisser");
+ void GameManager::drawGameOverScore(){
+	 SDL_Color textColor = { 10,10,10};
+	 std::string score_text = "Final score: " + std::to_string(score);
+	 SDL_Surface* textSurface = TTF_RenderText_Blended(font, score_text.c_str(), textColor);
+	 text = SDL_CreateTextureFromSurface(renderer, textSurface);
 
-	 TTF_Init();
-	 SDL_Color textColor = { 25,25,25 };
-	 SDL_Color textColor2 = { 255, 200,200 };
+	 SDL_Rect scoreTextBox;
+	 scoreTextBox.w = 300;
+	 scoreTextBox.h = 75;
+	 scoreTextBox.x = 75;
+	 scoreTextBox.y = 250;
+	 SDL_RenderCopy(renderer, text, NULL, &scoreTextBox);
+ }
+
+
+ void GameManager::drawHeader() {
+	headerRect.h = HEADER_HEIGHT;
+	headerRect.w = 500;
+	headerRect.x = 0;
+	headerRect.y = 0;
+
+	 SDL_Color textColor = { 230,230,230};
 	 std::string score_text = "score: " + std::to_string(score);
 
-	 TTF_Font* font = NULL;
-	 font = TTF_OpenFont("Assets/fonts/lazy.ttf", 28);
-	 if (font == NULL) {
-		 printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
-		 return;
-	 }
-
-	 SDL_Surface* textSurface = TTF_RenderText_Shaded(font, score_text.c_str(), textColor, textColor2);
+	 SDL_Surface* textSurface = TTF_RenderText_Blended(font, score_text.c_str(), textColor);
 	 text = SDL_CreateTextureFromSurface(renderer, textSurface);
-	 
  }
