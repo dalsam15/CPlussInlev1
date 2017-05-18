@@ -33,6 +33,11 @@ public:
 		return g;
 	}
 
+	void initalizeNewGame();
+
+	void initalizeGameSDL();
+
+
 	/* Kicks off/is the the gameloop */
 	void play();
 	void gameLoopTimer();
