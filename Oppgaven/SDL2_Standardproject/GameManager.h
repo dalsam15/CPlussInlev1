@@ -48,6 +48,7 @@ public:
 	//void drawGameObject(GameObject gameObject, bool flipX, bool flipY);
 	void addSnakeBody();
 	void showGameOver();
+	void drawHeader();
 private:
 
 	GameManager();								// Hidden constructor
@@ -77,6 +78,7 @@ private:
 
 	SDL_Renderer* renderer;
 
+	int score;
 	//lol
 };
 

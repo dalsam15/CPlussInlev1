@@ -14,6 +14,8 @@
 #include <vector>
 #include <chrono>
 
+#include <SDL_ttf.h>
+
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -25,6 +27,7 @@ using namespace std;
 #define TILE_SIZE 32
 #define BOARD_WIDTH 15
 #define BOARD_HEIGHT 15
+#define HEADER_HEIGHT 50
 
 
 /* Initializes SDL, creates the game window and fires off the timer. */
@@ -38,7 +41,6 @@ SDL_Texture*  snake_texture = NULL;
 SDL_Texture*  apple_texture = NULL;
 //SDL_Texture*  gameOver_texture = NULL;
 
-
 SDL_Renderer* renderer = NULL;
 
 
@@ -50,7 +52,7 @@ bool recivedUserInfo = false;
 GameManager::GameManager()
 {
 	SDLManager::Instance().init();
-	m_window = SDLManager::Instance().createWindow("Amazing gasashiong", (TILE_SIZE * BOARD_WIDTH), (TILE_SIZE * BOARD_HEIGHT));
+	m_window = SDLManager::Instance().createWindow("Snake", (TILE_SIZE * BOARD_WIDTH), (TILE_SIZE * BOARD_HEIGHT) + HEADER_HEIGHT);
 	
 	renderer = SDLManager::Instance().getRenderer(m_window);
 	
@@ -79,6 +81,9 @@ bool GameManager::isColliding(GameObject a, GameObject b) {
 
 void GameManager::play()
 {
+	score = 0;
+
+
 	currentDirection = right;
 	nextDirection = right;
 	SDL_Window *window = NULL;
@@ -114,7 +119,7 @@ void GameManager::play()
 	appleObject.position = RandomPos();
 	appleObject.texture = apple_texture;
 
-
+	drawHeader();
 
 
 	
@@ -193,6 +198,7 @@ void GameManager::handleInput() {
 	 if (isColliding(snake[0], appleObject)) {
 		 appleObject.position = RandomPos();
 		 addSnakeBody();
+		 score++;
 	 }
 
 	 for (int i = (snake.size() -1 ); i > 0; i--) {
@@ -271,8 +277,6 @@ void GameManager::handleInput() {
 			 
 		 }
 		  //Render window
-		 SDLManager::Instance().renderWindow(m_window);
-		 m_lastRender = 0.f;
 
 		 SDLManager::Instance().renderWindow(m_window);
 
@@ -326,4 +330,29 @@ void GameManager::handleInput() {
 		 _sleep(1); // pauses for 10 seconds
 	 _sleep(10000); // pauses for 10 seconds
 	
+ }
+
+ void GameManager::drawHeader() {
+	 TTF_Init();
+
+	 std::string score_text = "score: " + std::to_string(score);
+	 SDL_Color textColor = { 0, 0, 0, 0 };
+	 TTF_Font* font = NULL;
+	 font = TTF_OpenFont("Assets/fonts/lazy.ttf", 28);
+	 if (font == NULL) {
+		 printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
+		 return;
+	 }
+	 SDL_Surface* textSurface = TTF_RenderText_Solid(font, score_text.c_str(), textColor);
+	 SDL_Texture* text = SDL_CreateTextureFromSurface(renderer, textSurface);
+	 int text_width = textSurface->w;
+	 int text_height = textSurface->h;
+	 SDL_FreeSurface(textSurface);
+	 SDL_Rect box;
+	 box.w = BOARD_WIDTH;
+	 box.h = HEADER_HEIGHT;
+	 box.x = 25;
+	 box.y = 25;
+	 SDL_RenderCopy(renderer, text, NULL, &box);
+	 //SDL_DestroyTexture(text);
  }
