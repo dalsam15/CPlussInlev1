@@ -32,6 +32,8 @@ using namespace std;
 
 /* Initializes SDL, creates the game window and fires off the timer. */
 
+SDL_Texture* text = NULL;
+
 SDL_Surface*  snake_surface = NULL;
 SDL_Surface*  apple_surface = NULL;
 //SDL_Surface* gameOver_surface = NULL;
@@ -138,6 +140,8 @@ void GameManager::play()
 		showGameOver();
 		recivedUserInfo = true;
 	}
+
+	TTF_Quit();
 }
 
 void GameManager::gameLoopTimer() {
@@ -157,6 +161,10 @@ void GameManager::handleInput() {
 		 SDL_Event e;
 		 SDL_PollEvent(&e);
 
+		 if (e.type == SDL_QUIT) {
+			 notGameOver = false;
+			 return;
+		 }
 		 if (e.type == SDL_KEYDOWN) {
 			 switch (e.key.keysym.sym) {
 			 case SDLK_UP:
@@ -199,6 +207,7 @@ void GameManager::handleInput() {
 		 appleObject.position = RandomPos();
 		 addSnakeBody();
 		 score++;
+		 drawHeader();
 	 }
 
 	 for (int i = (snake.size() -1 ); i > 0; i--) {
@@ -260,22 +269,24 @@ void GameManager::handleInput() {
 }
 
  void GameManager::draw() {
-	
-	
 		 SDL_RenderClear(renderer);
-
-		
 		 drawGameObject(appleObject);
-
-		 
 
 		 for (snakeIterator = snake.begin();
 			 snakeIterator != snake.end();
 			 snakeIterator++)
 		 {
 			 drawGameObject(*snakeIterator);
-			 
 		 }
+
+		// SDL_FreeSurface(textSurface);
+		 SDL_Rect box;
+		 box.w = 200;
+		 box.h = 20;
+		 box.x = 25;
+		 box.y = 25;
+		 SDL_RenderCopy(renderer, text, NULL, &box);
+		 //SDL_DestroyTexture(text);
 		  //Render window
 
 		 SDLManager::Instance().renderWindow(m_window);
@@ -300,6 +311,7 @@ void GameManager::handleInput() {
 	 GameObject newBody;
 	 newBody.texture = snake_texture;
 	 snake.push_back(newBody);
+
  }
 
  void GameManager::showGameOver()
@@ -333,26 +345,25 @@ void GameManager::handleInput() {
  }
 
  void GameManager::drawHeader() {
-	 TTF_Init();
+	 printf("jeg elsker skolisser");
 
+	 TTF_Init();
+	 SDL_Color textColor = { 25,25,25 };
+	 SDL_Color textColor2 = { 255, 200,200 };
 	 std::string score_text = "score: " + std::to_string(score);
-	 SDL_Color textColor = { 0, 0, 0, 0 };
+
 	 TTF_Font* font = NULL;
 	 font = TTF_OpenFont("Assets/fonts/lazy.ttf", 28);
 	 if (font == NULL) {
 		 printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
 		 return;
 	 }
-	 SDL_Surface* textSurface = TTF_RenderText_Solid(font, score_text.c_str(), textColor);
-	 SDL_Texture* text = SDL_CreateTextureFromSurface(renderer, textSurface);
-	 int text_width = textSurface->w;
-	 int text_height = textSurface->h;
-	 SDL_FreeSurface(textSurface);
-	 SDL_Rect box;
-	 box.w = BOARD_WIDTH;
-	 box.h = HEADER_HEIGHT;
-	 box.x = 25;
-	 box.y = 25;
-	 SDL_RenderCopy(renderer, text, NULL, &box);
-	 //SDL_DestroyTexture(text);
+
+	 SDL_Surface* textSurface = TTF_RenderText_Shaded(font, score_text.c_str(), textColor, textColor2);
+
+
+
+//	 SDL_Surface* textSurface = TTF_RenderText_Solid(font, score_text.c_str(), textColor);
+	text = SDL_CreateTextureFromSurface(renderer, textSurface);
+	 
  }
