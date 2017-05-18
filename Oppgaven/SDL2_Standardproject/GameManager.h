@@ -48,6 +48,7 @@ public:
 	//void drawGameObject(GameObject gameObject, bool flipX, bool flipY);
 	void addSnakeBody();
 	void showGameOver();
+	bool withinBounds(const SDL_Rect & rect, int x, int y);
 	void drawHeader();
 private:
 
