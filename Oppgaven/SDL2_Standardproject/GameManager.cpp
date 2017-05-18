@@ -329,6 +329,12 @@ void GameManager::handleInput() {
 	 SDL_Surface * gameOver_surface = IMG_Load("Assets/gfx/bye.png");
 	 SDL_Texture * gameOver_texture = SDL_CreateTextureFromSurface(renderer, gameOver_surface);
 
+	 SDL_Surface * gameOver_PlayAgain = IMG_Load("Assets/gfx/playagain.png");
+	 SDL_Texture * gameOver_PlayAgainTX  = SDL_CreateTextureFromSurface(renderer, gameOver_PlayAgain);
+
+	 SDL_Surface * gameOver_Close = IMG_Load("Assets/gfx/giveup.png");
+	 SDL_Texture * gameOver_CloseTX = SDL_CreateTextureFromSurface(renderer, gameOver_Close);
+
 	 SDL_RenderClear(renderer);
 	 SDL_RenderPresent(renderer);
 	
@@ -338,8 +344,24 @@ void GameManager::handleInput() {
 	 rect.w = 400;
 	 rect.x = 50;
 	 rect.y = 50;
+
+	 SDL_Rect rectPlayAgain;
+	 rectPlayAgain.h = 50;
+	 rectPlayAgain.w = 173;
+	 rectPlayAgain.x = 50;
+	 rectPlayAgain.y = 50;
+
+
+	 SDL_Rect rectClose;
+	 rectClose.h = 50;
+	 rectClose.w = 173;
+	 rectClose.x = 200;
+	 rectClose.y = 50;
+
 	 // SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
 	 SDL_RenderCopyEx(renderer, gameOver_texture, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+	 SDL_RenderCopyEx(renderer, gameOver_CloseTX, NULL, &rectClose, 0, NULL, SDL_FLIP_NONE);
+	 SDL_RenderCopyEx(renderer, gameOver_PlayAgainTX, NULL, &rectPlayAgain, 0, NULL, SDL_FLIP_NONE);
 		 //SDL_RenderCopy(renderer, gameOver_texture, NULL, NULL);
 		 SDLManager::Instance().renderWindow(m_window);
 		 _sleep(1); // pauses for 10 seconds
