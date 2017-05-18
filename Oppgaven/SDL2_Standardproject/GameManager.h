@@ -43,6 +43,7 @@ public:
 	void play();
 	void gameLoopTimer();
 	void handleInput();
+	void moveAppleToRandomPos();
 	void gameLoop();
 	bool IsGameOver();
 	Vector2D  RandomPos();
@@ -52,7 +53,7 @@ public:
 	void showGameOver();
 	bool withinBounds(const SDL_Rect & rect, int x, int y);
 	void drawGameOverScore();
-	void drawHeader();
+	void drawGameHeader();
 private:
 
 	GameManager();								// Hidden constructor
@@ -65,6 +66,7 @@ private:
 	 bool isColliding(GameObject a, GameObject b);
 	unsigned int m_window; // pointer to main window
 
+	float frameRateDelay = 0.25f;
 	bool running = true;
 	bool notGameOver = true;
 	int score = 0;

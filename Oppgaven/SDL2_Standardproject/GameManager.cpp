@@ -77,9 +77,7 @@ void GameManager::initalizeNewGame() {
 		snake[i].position.x = 5 - i;
 		snake[i].position.y = 5;
 	}
-	appleObject.position = RandomPos();
-	drawHeader();
-
+	moveAppleToRandomPos();
 	snake[0].texture = snakeHead_texture;
 	appleObject.texture = apple_texture;
 }
@@ -90,7 +88,6 @@ void GameManager::modifyRect(SDL_Rect * rect,int x, int y, int width, int height
 	rect->w = width;
 	rect->h = height;
 }
-
 SDL_Texture* GameManager::createTextureFromPath(string path) {
 	SDL_Surface * surface = IMG_Load(path.c_str());
 	return SDL_CreateTextureFromSurface(renderer, surface);
@@ -98,10 +95,6 @@ SDL_Texture* GameManager::createTextureFromPath(string path) {
 void GameManager::initalizeGameSDL() {
 	TTF_Init();
 	font = TTF_OpenFont("Assets/fonts/junegull.ttf", 28);
-	if (font == NULL) {
-		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
-		return;
-	}
 
 	modifyRect(&headerTextRect, 10, HEADER_HEIGHT /2, 200, 30);
 	modifyRect(&gameOverRect, 25, 50, 400, 200);
@@ -110,7 +103,7 @@ void GameManager::initalizeGameSDL() {
 	modifyRect(&headerRect, 0, 0, 500, HEADER_HEIGHT);
 	modifyRect(&scoreTextBox, 75, 250, 300, 75);
 
-	atexit(SDL_Quit);
+	atexit(SDL_Quit); // ?? 
 	SDL_SetRenderDrawColor(renderer, 65, 65, 65, 65); //background color of game
 
 	snake_texture = createTextureFromPath("Assets/gfx/snake body.png");
@@ -127,8 +120,9 @@ void GameManager::play()
 	//important
 	initalizeGameSDL();
 	initalizeNewGame();
-	//ctrl k+u / ctrl+k+c
-	while (running) {
+
+	while (running) 
+	{
 		handleInput();
 		gameLoopTimer();
 	}
@@ -138,7 +132,7 @@ void GameManager::play()
 
 void GameManager::gameLoopTimer() {
 	Timer::Instance().update();
-	if (Timer::Instance().elapsedTime() > 0.25f) {
+	if (Timer::Instance().elapsedTime() > frameRateDelay) {
 		Timer::Instance().resetTime();
 		 Timer::Instance().elapsedTime();
 
@@ -202,29 +196,34 @@ void GameManager::handleInput() {
 		 }
 	 }
 
+void GameManager::moveAppleToRandomPos() {
+	bool foundValidApplePos = false;
+	while (!foundValidApplePos) {
+		appleObject.position = RandomPos();
+		bool hasColliderWithAny = false;
+		for (int i = 0; i < (int)snake.size(); i++) {
+			if (isColliding(snake[i], appleObject)) hasColliderWithAny = true;
+		}
+		foundValidApplePos = !hasColliderWithAny;
+	}
+}
 
  void GameManager::gameLoop() {
 
+	 //if snake head is colliding with apple
 	 if (isColliding(snake[0], appleObject)) {
-		 bool foundValidApplePos = false;
-		 while (!foundValidApplePos) {
-			 appleObject.position = RandomPos();
-			 bool hasColliderWithAny = false;
-			 for (int i = 0; i < (int)snake.size(); i++) {
-				 if (isColliding(snake[i], appleObject)) hasColliderWithAny = true;
-			 }
-			foundValidApplePos = !hasColliderWithAny;
-		 }
-		 addSnakeBody();
+		 moveAppleToRandomPos(); 
+		 addSnakeBody(); //increases length of snake
 		 score++;
-		 drawHeader();
 	 }
 
+	 //moves each body part forward
 	 for (int i = (snake.size() -1 ); i > 0; i--) {
 		 snake[i].position.x = snake[i - 1].position.x;
 		 snake[i].position.y = snake[i - 1].position.y;
 	 }
 
+	 //moves snake head in the current direction
 	 currentDirection = nextDirection;
 	 switch (currentDirection) {
 	 case left:
@@ -275,14 +274,18 @@ void GameManager::handleInput() {
 
  void GameManager::drawGame() {
 	 SDL_RenderClear(renderer);
+
+		//draws apple
 		 drawGameObject(appleObject);
 
+		 //draws snake
 		 for (snakeIterator = snake.begin();
 			 snakeIterator != snake.end();
 			 snakeIterator++) { drawGameObject(*snakeIterator); }
 		 
-		 SDL_RenderCopy(renderer, header_texture, NULL, &headerRect);
-		 SDL_RenderCopy(renderer, text, NULL, &headerTextRect);
+		 //draws header
+		 drawGameHeader();
+		 
 		 SDLManager::Instance().renderWindow(m_window);
  }
 
@@ -325,10 +328,11 @@ void GameManager::handleInput() {
 	 SDL_RenderCopy(renderer, text, NULL, &scoreTextBox);
  }
 
-
- void GameManager::drawHeader() {
+ void GameManager::drawGameHeader() {
 	SDL_Color textColor = { 230,230,230};
 	string score_text = "score: " + to_string(score);
 	SDL_Surface* textSurface = TTF_RenderText_Blended(font, score_text.c_str(), textColor);
 	text = SDL_CreateTextureFromSurface(renderer, textSurface);
+	SDL_RenderCopy(renderer, header_texture, NULL, &headerRect);
+	SDL_RenderCopy(renderer, text, NULL, &headerTextRect);
  }
