@@ -6,7 +6,7 @@ public:
 	Vector2D(int x, int y);
 	~Vector2D();
 
-	bool operator==(Vector2D other);
+	friend bool operator==(Vector2D &, Vector2D &);
 
 	int y;
 	int x;

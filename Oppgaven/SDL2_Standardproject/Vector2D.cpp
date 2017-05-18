@@ -16,7 +16,8 @@ Vector2D::~Vector2D()
 {
 }
 
-bool Vector2D::operator==(Vector2D other)
+
+bool operator==(Vector2D &a, Vector2D &b)
 {
-	return (x == other.x && y == other.y);
+	return a.x == b.x && a.y == b.y;
 }

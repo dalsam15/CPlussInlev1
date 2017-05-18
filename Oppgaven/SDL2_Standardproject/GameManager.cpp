@@ -13,16 +13,12 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-
 #include <SDL_ttf.h>
-
-
 #include <SDL.h>
 #include <SDL_image.h>
+#include <string>
 
 using namespace std;
-
-
 
 #define TILE_SIZE 32
 #define BOARD_WIDTH 15
@@ -30,44 +26,25 @@ using namespace std;
 #define HEADER_HEIGHT 64
 #define SNAKE_START_LENGTH 4
 
-
-/* Initializes SDL, creates the game window and fires off the timer. */
-
-SDL_Texture* text = NULL;
-
-SDL_Surface*  snake_surface = NULL;
-SDL_Surface*  apple_surface = NULL;
-SDL_Surface * snakeHead_surface = NULL;
-
-SDL_Texture*  snake_texture = NULL;
-SDL_Texture*  apple_texture = NULL;
-SDL_Texture* snakeHead_texture = NULL;
-
-SDL_Texture* header_texture = NULL;
-
-SDL_Renderer* renderer = NULL;
-
-bool running = true;
-bool notGameOver = true;
-bool recivedUserInfo = false;
-
-SDL_Rect rectPlayAgain;
-SDL_Rect rectClose;
-SDL_Rect rect;
-
-SDL_Rect headerRect;
-
-SDL_Surface * header_surface;
-
-SDL_Surface * gameOver_surface;
-SDL_Texture * gameOver_texture;
-SDL_Surface * gameOver_PlayAgain;
-SDL_Texture * gameOver_PlayAgainTX;
-
-SDL_Surface * gameOver_Close;
-SDL_Texture * gameOver_CloseTX;
-
-TTF_Font* font;
+//global variables
+#pragma region sdl
+	SDL_Texture* text = NULL;
+	SDL_Texture*  snake_texture = NULL;
+	SDL_Texture*  apple_texture = NULL;
+	SDL_Texture* snakeHead_texture = NULL;
+	SDL_Texture* header_texture = NULL;
+	SDL_Renderer* renderer = NULL;
+	SDL_Rect rectPlayAgain;
+	SDL_Rect rectClose;
+	SDL_Rect gameOverRect;
+	SDL_Rect headerRect;
+	SDL_Texture * gameOver_texture;
+	SDL_Texture * gameOver_PlayAgainTX;
+	SDL_Texture * gameOver_CloseTX;
+	SDL_Rect headerTextRect;
+	SDL_Rect scoreTextBox;
+	TTF_Font* font;
+#pragma endregion
 
 GameManager::GameManager()
 {
@@ -84,9 +61,8 @@ float GameManager:: RandomFloat(float a, float b) {
 	return a + r;
 }
 bool GameManager::isColliding(GameObject a, GameObject b) {
-	return (a.position.x == b.position.x && a.position.y == b.position.y); //operation overloading?
+	return a.position == b.position;
 }
-
 
 void GameManager::initalizeNewGame() {
 	snake.clear();
@@ -108,6 +84,17 @@ void GameManager::initalizeNewGame() {
 	appleObject.texture = apple_texture;
 }
 
+void GameManager::modifyRect(SDL_Rect * rect,int x, int y, int width, int height) {
+	rect->x = x;
+	rect->y = y;
+	rect->w = width;
+	rect->h = height;
+}
+
+SDL_Texture* GameManager::createTextureFromPath(string path) {
+	SDL_Surface * surface = IMG_Load(path.c_str());
+	return SDL_CreateTextureFromSurface(renderer, surface);
+}
 void GameManager::initalizeGameSDL() {
 	TTF_Init();
 	font = TTF_OpenFont("Assets/fonts/junegull.ttf", 28);
@@ -116,37 +103,23 @@ void GameManager::initalizeGameSDL() {
 		return;
 	}
 
-	SDL_Window *window = NULL;
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
-	}
+	modifyRect(&headerTextRect, 10, HEADER_HEIGHT /2, 200, 30);
+	modifyRect(&gameOverRect, 25, 50, 400, 200);
+	modifyRect(&rectPlayAgain, 25, 450, 173, 50);
+	modifyRect(&rectClose, 265, 450, 173, 50);
+	modifyRect(&headerRect, 0, 0, 500, HEADER_HEIGHT);
+	modifyRect(&scoreTextBox, 75, 250, 300, 75);
+
 	atexit(SDL_Quit);
-	//SDL_CreateWindowAndRenderer(800, 480, 0, SDLManager::Instance().getMainWindow, SDLManager::Instance().getRenderer);
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	SDL_RenderClear(renderer);
-	SDL_RenderPresent(renderer);
-	//apple_surface = SDL_LoadBMP("Assets/gfx/apple.bmp");
-	snake_surface = IMG_Load("Assets/gfx/snake body.png");
-	snakeHead_surface = IMG_Load("Assets/gfx/snake head.png");
-	apple_surface = IMG_Load("Assets/gfx/apple.png");
+	SDL_SetRenderDrawColor(renderer, 65, 65, 65, 65); //background color of game
 
-	snake_texture = SDL_CreateTextureFromSurface(renderer, snake_surface);
-	snakeHead_texture = SDL_CreateTextureFromSurface(renderer, snakeHead_surface
-	);
-	apple_texture = SDL_CreateTextureFromSurface(renderer, apple_surface);
-
-	gameOver_surface = IMG_Load("Assets/gfx/itsgameover.png");
-	gameOver_texture = SDL_CreateTextureFromSurface(renderer, gameOver_surface);
-
-	gameOver_PlayAgain = IMG_Load("Assets/gfx/playagain.png");
-	gameOver_PlayAgainTX = SDL_CreateTextureFromSurface(renderer, gameOver_PlayAgain);
-
-	gameOver_Close = IMG_Load("Assets/gfx/giveup.png");
-	gameOver_CloseTX = SDL_CreateTextureFromSurface(renderer, gameOver_Close);
-
-	header_surface = IMG_Load("Assets/gfx/header.png");
-	header_texture = SDL_CreateTextureFromSurface(renderer, header_surface);
-
+	snake_texture = createTextureFromPath("Assets/gfx/snake body.png");
+	snakeHead_texture = createTextureFromPath("Assets/gfx/snake head.png");
+	apple_texture = createTextureFromPath("Assets/gfx/apple.png");
+	header_texture = createTextureFromPath("Assets/gfx/header.png");
+	gameOver_CloseTX = createTextureFromPath("Assets/gfx/giveup.png");
+	gameOver_PlayAgainTX = createTextureFromPath("Assets/gfx/playagain.png");
+	gameOver_texture = createTextureFromPath("Assets/gfx/itsgameover.png");
 }
 
 void GameManager::play()
@@ -154,18 +127,13 @@ void GameManager::play()
 	//important
 	initalizeGameSDL();
 	initalizeNewGame();
-
-	// Calculate render frames per second (second / frames) (60)
-	float render_fps = 1.f / 60.f;
-	m_lastRender = render_fps; // set it to render immediately
-
+	//ctrl k+u / ctrl+k+c
 	while (running) {
 		handleInput();
 		gameLoopTimer();
 	}
-
 	TTF_Quit();
-	//TTF free?
+	//This is where you free shit!
 }
 
 void GameManager::gameLoopTimer() {
@@ -232,7 +200,6 @@ void GameManager::handleInput() {
 				 break;
 			 }
 		 }
-
 	 }
 
 
@@ -243,7 +210,7 @@ void GameManager::handleInput() {
 		 while (!foundValidApplePos) {
 			 appleObject.position = RandomPos();
 			 bool hasColliderWithAny = false;
-			 for (int i = 0; i < snake.size(); i++) {
+			 for (int i = 0; i < (int)snake.size(); i++) {
 				 if (isColliding(snake[i], appleObject)) hasColliderWithAny = true;
 			 }
 			foundValidApplePos = !hasColliderWithAny;
@@ -277,18 +244,21 @@ void GameManager::handleInput() {
 		 notGameOver = false;
 	 }
 
-	 draw();
+	 //important
+	 drawGame();
  }
 
  bool GameManager::IsGameOver(){
-	 for (int i = 0; i < snake.size(); i++) {
-		 for (int j = 0; j < snake.size(); j++) {
+	 //checks if snake collides with himself
+	 for (int i = 0; i < (int)snake.size(); i++) {
+		 for (int j = 0; j < (int)snake.size(); j++) {
 			 if (isColliding(snake[i], snake[j]) && j != i) {
 				 return true;
 			 }
 		 }
 	 }
-	 //cout << "x: " << snake[0].position.x << "y: " << snake[0].position.y << endl;
+
+	 //checks if snake is out of bounds
 	 if (snake[0].position.x < 0) return true;
 	 if (snake[0].position.x > BOARD_WIDTH -1 ) return true;
 	 int headerPosInGrid = HEADER_HEIGHT / TILE_SIZE;
@@ -303,26 +273,16 @@ void GameManager::handleInput() {
 	 return Vector2D(x, y);
 }
 
- void GameManager::draw() {
+ void GameManager::drawGame() {
 	 SDL_RenderClear(renderer);
 		 drawGameObject(appleObject);
 
 		 for (snakeIterator = snake.begin();
 			 snakeIterator != snake.end();
-			 snakeIterator++)
-		 {
-			 drawGameObject(*snakeIterator);
-		 }
-
-		 // SDL_FreeSurface(textSurface);
-		 //TODO: this is shit
-		 SDL_Rect box;
-		 box.w = 200;
-		 box.h = 30;
-		 box.x = 10;
-		 box.y = HEADER_HEIGHT / 2;
+			 snakeIterator++) { drawGameObject(*snakeIterator); }
+		 
 		 SDL_RenderCopy(renderer, header_texture, NULL, &headerRect);
-		 SDL_RenderCopy(renderer, text, NULL, &box);
+		 SDL_RenderCopy(renderer, text, NULL, &headerTextRect);
 		 SDLManager::Instance().renderWindow(m_window);
  }
 
@@ -333,9 +293,7 @@ void GameManager::handleInput() {
 	 rect.w = TILE_SIZE;
 	 rect.x = gameObject.position.x * TILE_SIZE;
 	 rect.y = gameObject.position.y * TILE_SIZE;
-	// SDL_RenderCopy(renderer, gameObject.texture, NULL, &rect);
 	 SDL_RenderCopyEx(renderer, gameObject.texture, NULL, &rect, gameObject.transform.rotation, NULL, gameObject.transform.flip);
-	
  }
 
  void GameManager::addSnakeBody()
@@ -343,37 +301,15 @@ void GameManager::handleInput() {
 	 GameObject newBody;
 	 newBody.texture = snake_texture;
 	 snake.push_back(newBody);
-
  }
 
  void GameManager::showGameOver()
  { 
-	 printf("kjører denne i det hele tatt?????");
-
-	 //TODO: these values are not nessecary to run all theF FUCKINGSS time
-
-	 rect.h = 200;
-	 rect.w = 400;
-	 rect.x = 25;
-	 rect.y = 50;
-
-	 rectPlayAgain.h = 50;
-	 rectPlayAgain.w = 173;
-	 rectPlayAgain.x = 25;
-	 rectPlayAgain.y = 450;
-
-	 rectClose.h = 50;
-	 rectClose.w = 173;
-	 rectClose.x = 265;
-	 rectClose.y = 450;
-
 	 SDL_RenderClear(renderer);
-	 SDL_RenderCopyEx(renderer, gameOver_texture, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+	 SDL_RenderCopyEx(renderer, gameOver_texture, NULL, &gameOverRect, 0, NULL, SDL_FLIP_NONE);
 	 SDL_RenderCopyEx(renderer, gameOver_CloseTX, NULL, &rectClose, 0, NULL, SDL_FLIP_NONE);
 	 SDL_RenderCopyEx(renderer, gameOver_PlayAgainTX, NULL, &rectPlayAgain, 0, NULL, SDL_FLIP_NONE);
-
 	 drawGameOverScore();
-
 	 SDLManager::Instance().renderWindow(m_window);
  }
 
@@ -382,29 +318,17 @@ void GameManager::handleInput() {
  }
 
  void GameManager::drawGameOverScore(){
-	 SDL_Color textColor = { 10,10,10};
-	 std::string score_text = "Final score: " + std::to_string(score);
+	 SDL_Color textColor = {10,10,10};
+	 string score_text = "Final score: " + to_string(score);
 	 SDL_Surface* textSurface = TTF_RenderText_Blended(font, score_text.c_str(), textColor);
 	 text = SDL_CreateTextureFromSurface(renderer, textSurface);
-
-	 SDL_Rect scoreTextBox;
-	 scoreTextBox.w = 300;
-	 scoreTextBox.h = 75;
-	 scoreTextBox.x = 75;
-	 scoreTextBox.y = 250;
 	 SDL_RenderCopy(renderer, text, NULL, &scoreTextBox);
  }
 
 
  void GameManager::drawHeader() {
-	headerRect.h = HEADER_HEIGHT;
-	headerRect.w = 500;
-	headerRect.x = 0;
-	headerRect.y = 0;
-
-	 SDL_Color textColor = { 230,230,230};
-	 std::string score_text = "score: " + std::to_string(score);
-
-	 SDL_Surface* textSurface = TTF_RenderText_Blended(font, score_text.c_str(), textColor);
-	 text = SDL_CreateTextureFromSurface(renderer, textSurface);
+	SDL_Color textColor = { 230,230,230};
+	string score_text = "score: " + to_string(score);
+	SDL_Surface* textSurface = TTF_RenderText_Blended(font, score_text.c_str(), textColor);
+	text = SDL_CreateTextureFromSurface(renderer, textSurface);
  }
