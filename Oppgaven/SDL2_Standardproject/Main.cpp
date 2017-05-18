@@ -14,6 +14,9 @@
 
 #include <iostream>
 #include "GameManager.h"
+#include "SDL_Main.h"
+#include "SDL.h"
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 
 int main(int argc, char* argv[])
 {
