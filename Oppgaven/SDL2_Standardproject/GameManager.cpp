@@ -128,7 +128,6 @@ void GameManager::play()
 	}
 	//this is when the user exits the game
 	TTF_Quit();
-	//This is where you free shit!
 }
 void GameManager::gameLoopTimer() {
 	Timer::Instance().update();
