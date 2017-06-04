@@ -63,8 +63,8 @@ float GameManager:: RandomFloat(float a, float b) {
 bool GameManager::isColliding(GameObject a, GameObject b) {
 	return a.position == b.position;
 }
-
 void GameManager::initalizeNewGame() {
+	//resets the game
 	snake.clear();
 	notGameOver = true;
 	score = 0;
@@ -81,7 +81,6 @@ void GameManager::initalizeNewGame() {
 	snake[0].texture = snakeHead_texture;
 	appleObject.texture = apple_texture;
 }
-
 void GameManager::modifyRect(SDL_Rect * rect,int x, int y, int width, int height) {
 	rect->x = x;
 	rect->y = y;
@@ -93,6 +92,8 @@ SDL_Texture* GameManager::createTextureFromPath(string path) {
 	return SDL_CreateTextureFromSurface(renderer, surface);
 }
 void GameManager::initalizeGameSDL() {
+	//this is where we initialize all the texutres, rectangles, fonts, etc..
+
 	TTF_Init();
 	font = TTF_OpenFont("Assets/fonts/junegull.ttf", 28);
 
@@ -103,7 +104,7 @@ void GameManager::initalizeGameSDL() {
 	modifyRect(&headerRect, 0, 0, 500, HEADER_HEIGHT);
 	modifyRect(&scoreTextBox, 75, 250, 300, 75);
 
-	atexit(SDL_Quit); // ?? 
+	atexit(SDL_Quit);
 	SDL_SetRenderDrawColor(renderer, 65, 65, 65, 65); //background color of game
 
 	snake_texture = createTextureFromPath("Assets/gfx/snake body.png");
@@ -114,7 +115,6 @@ void GameManager::initalizeGameSDL() {
 	gameOver_PlayAgainTX = createTextureFromPath("Assets/gfx/playagain.png");
 	gameOver_texture = createTextureFromPath("Assets/gfx/itsgameover.png");
 }
-
 void GameManager::play()
 {
 	//important
@@ -126,16 +126,14 @@ void GameManager::play()
 		handleInput();
 		gameLoopTimer();
 	}
+	//this is when the user exits the game
 	TTF_Quit();
 	//This is where you free shit!
 }
-
 void GameManager::gameLoopTimer() {
 	Timer::Instance().update();
 	if (Timer::Instance().elapsedTime() > frameRateDelay) {
-		Timer::Instance().resetTime();
-		 Timer::Instance().elapsedTime();
-
+		Timer::Instance().resetTime(); //sets the elapsed time back to zero
 		 if (notGameOver) {
 			 gameLoop();
 		 }
@@ -144,7 +142,6 @@ void GameManager::gameLoopTimer() {
 		 }
 	}
 }
-
 void GameManager::handleInput() {
 		 SDL_Event e;
 		 SDL_PollEvent(&e);
@@ -195,8 +192,8 @@ void GameManager::handleInput() {
 			 }
 		 }
 	 }
-
 void GameManager::moveAppleToRandomPos() {
+	//moves the apple to a random position, and makes sure the position is not inside the snake body
 	bool foundValidApplePos = false;
 	while (!foundValidApplePos) {
 		appleObject.position = RandomPos();
@@ -207,8 +204,8 @@ void GameManager::moveAppleToRandomPos() {
 		foundValidApplePos = !hasColliderWithAny;
 	}
 }
-
  void GameManager::gameLoop() {
+	 //this is code that runs every game tick, meaning a couple times per second in this instance
 
 	 //if snake head is colliding with apple
 	 if (isColliding(snake[0], appleObject)) {
@@ -219,8 +216,7 @@ void GameManager::moveAppleToRandomPos() {
 
 	 //moves each body part forward
 	 for (int i = (snake.size() -1 ); i > 0; i--) {
-		 snake[i].position.x = snake[i - 1].position.x;
-		 snake[i].position.y = snake[i - 1].position.y;
+		 snake[i].position = snake[i - 1].position;
 	 }
 
 	 //moves snake head in the current direction
@@ -246,7 +242,6 @@ void GameManager::moveAppleToRandomPos() {
 	 //important
 	 drawGame();
  }
-
  bool GameManager::IsGameOver(){
 	 //checks if snake collides with himself
 	 for (int i = 0; i < (int)snake.size(); i++) {
@@ -267,13 +262,13 @@ void GameManager::moveAppleToRandomPos() {
 	 return false;
 }
  Vector2D GameManager::RandomPos() {
+	 //a random position on the screen excluding the header
 	 int x = (int)RandomFloat(1, BOARD_WIDTH);
 	 int y = (int)RandomFloat(1 + (HEADER_HEIGHT / TILE_SIZE), BOARD_HEIGHT);
 	 return Vector2D(x, y);
 }
-
  void GameManager::drawGame() {
-	 SDL_RenderClear(renderer);
+	 SDL_RenderClear(renderer); //clears the current screen
 
 		//draws apple
 		 drawGameObject(appleObject);
@@ -288,7 +283,6 @@ void GameManager::moveAppleToRandomPos() {
 		 
 		 SDLManager::Instance().renderWindow(m_window);
  }
-
  void GameManager::drawGameObject(GameObject gameObject)
  {
 	 SDL_Rect rect;
@@ -298,14 +292,12 @@ void GameManager::moveAppleToRandomPos() {
 	 rect.y = gameObject.position.y * TILE_SIZE;
 	 SDL_RenderCopyEx(renderer, gameObject.texture, NULL, &rect, gameObject.transform.rotation, NULL, gameObject.transform.flip);
  }
-
  void GameManager::addSnakeBody()
  {
 	 GameObject newBody;
 	 newBody.texture = snake_texture;
 	 snake.push_back(newBody);
  }
-
  void GameManager::showGameOver()
  { 
 	 SDL_RenderClear(renderer);
@@ -315,11 +307,9 @@ void GameManager::moveAppleToRandomPos() {
 	 drawGameOverScore();
 	 SDLManager::Instance().renderWindow(m_window);
  }
-
  bool GameManager::withinBounds(const SDL_Rect& rect, int x, int y) {
 	 return(x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h);
  }
-
  void GameManager::drawGameOverScore(){
 	 SDL_Color textColor = {10,10,10};
 	 string score_text = "Final score: " + to_string(score);
@@ -327,7 +317,6 @@ void GameManager::moveAppleToRandomPos() {
 	 text = SDL_CreateTextureFromSurface(renderer, textSurface);
 	 SDL_RenderCopy(renderer, text, NULL, &scoreTextBox);
  }
-
  void GameManager::drawGameHeader() {
 	SDL_Color textColor = { 230,230,230};
 	string score_text = "score: " + to_string(score);

@@ -17,7 +17,14 @@ Vector2D::~Vector2D()
 }
 
 
-bool operator==(Vector2D &a, Vector2D &b)
+bool operator==(const Vector2D &a, const Vector2D &b)
 {
 	return a.x == b.x && a.y == b.y;
+}
+
+Vector2D& Vector2D::operator=(const Vector2D &a)
+{
+	x = a.x;
+	y = a.y;
+	return *this;
 }
